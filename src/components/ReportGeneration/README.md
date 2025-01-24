@@ -1,66 +1,81 @@
-# Report Generation System
+# Delilah Report Generation System
 
 ## Overview
-The report generation system uses an agent-based architecture to transform assessment data into formatted reports. Each section of the report is handled by a specialized agent that knows how to process, validate, and format its specific data.
+The report generation system uses an intelligent agent-based architecture to transform assessment data into formatted reports. Each section of the report is handled by specialized agents that process, validate, and format their specific data domains.
 
-## Architecture
+## Components
 
 ```
 ReportGeneration/
 ├── agents/               # Agent implementations
-├── components/          # React components
-├── testing/            # Test utilities
-└── types/              # TypeScript definitions
+│   ├── BaseAgent.ts     # Base agent class
+│   ├── MedicalHistoryAgent.ts
+│   ├── SymptomsAgent.ts
+│   ├── ADLAgent.ts
+│   ├── EnvironmentalAgent.ts
+│   └── AMAGuidesAgent.ts
+├── templates/           # Report templates
+│   ├── ReportTemplates.ts
+│   └── README.md
+├── utils/              # Utility functions
+│   └── validation.ts
+└── testing/           # Test utilities
+    ├── ReportGenerationTest.tsx
+    └── AgentTests.tsx
+
 ```
 
-## Key Components
-
-### ReportOrchestrator
-Manages the report generation process:
-- Coordinates multiple agents
-- Handles error aggregation
-- Manages report assembly
-- Validates overall report structure
-
-### BaseAgent
-Abstract base class for all agents:
-- Defines common agent interface
-- Provides shared utilities
-- Handles error management
-- Manages validation
-
-### Specialized Agents
-Each agent handles a specific report section:
-- FunctionalAssessmentAgent: ROM, MMT, Balance data
-- SymptomsAgent: Physical, cognitive, emotional symptoms
-- MedicalHistoryAgent: Past medical history, current conditions
-- ADLAgent: Activities of daily living assessment
-- EnvironmentalAgent: Environmental assessment data
-- AMAGuidesAgent: AMA guidelines scoring
-
-## Usage
+## Quick Start
 
 ```typescript
 import { createReportOrchestrator } from './ReportOrchestrator';
+import { TemplateManager } from './templates/ReportTemplates';
 
-// Create orchestrator
+// Create template manager with desired options
+const templateManager = new TemplateManager({
+  detailLevel: 'detailed',
+  format: 'markdown'
+});
+
+// Create orchestrator with assessment data
 const orchestrator = createReportOrchestrator(assessmentData, {
-  detailLevel: 'standard'
+  templateManager,
+  validateData: true
 });
 
 // Generate report
 const report = await orchestrator.generateReport();
-
-// Use sections
-const sections = report.sections;
 ```
 
-## Implementing New Agents
+## Features
 
-1. Create new agent class:
+### 1. Agent System
+- Each section handled by specialized agent
+- Built-in data validation
+- Extensible processing pipeline
+- Error handling and reporting
+
+### 2. Template System
+- Multiple detail levels (brief/standard/detailed)
+- Multiple output formats (plain/markdown/html)
+- Customizable section templates
+- Data formatters for complex fields
+
+### 3. Validation
+- Field-level validation rules
+- Custom validation functions
+- Built-in common validators
+- Comprehensive error reporting
+
+## Adding New Features
+
+### New Agent
+1. Create new agent class extending BaseAgent
+2. Implement process() and format() methods
+3. Add to ReportOrchestrator
+4. Add corresponding tests
+
 ```typescript
-import { BaseAgent } from './BaseAgent';
-
 class NewSectionAgent extends BaseAgent {
   constructor(context: AgentContext) {
     super(context, orderNumber, 'Section Title', ['required.fields']);
@@ -78,22 +93,34 @@ class NewSectionAgent extends BaseAgent {
 }
 ```
 
-2. Register in orchestrator:
+### New Template
+1. Add template to ReportTemplates.ts
+2. Define brief/standard/detailed versions
+3. Add any needed formatters
+4. Update tests
+
 ```typescript
-this.agents = [
-  // ... other agents
-  new NewSectionAgent(context, 7, 'New Section'),
-];
+templates.newSection = {
+  title: 'New Section',
+  order: nextOrder,
+  templates: {
+    brief: '...',
+    standard: '...',
+    detailed: '...'
+  },
+  formatters: {
+    customField: (value) => `Formatted: ${value}`
+  }
+};
 ```
 
-## Error Handling
-- Agents report errors through the BaseAgent error system
-- Orchestrator aggregates errors from all agents
-- Each section tracks its own validation state
-- System continues processing despite section errors
-
 ## Testing
-Use the ReportGenerationTest component:
+Run the test suite:
+```bash
+npm test ReportGeneration
+```
+
+Or use the test component:
 ```typescript
 import { ReportGenerationTest } from './testing';
 
@@ -103,8 +130,11 @@ import { ReportGenerationTest } from './testing';
 />
 ```
 
-## Extending the System
-1. Add new agents for new sections
-2. Modify existing agents for new fields
-3. Update validation rules
-4. Add new formatting options
+## Next Steps
+1. Add remaining report sections:
+   - Care Plans
+   - Recommendations
+   - Appendices
+2. Enhance validation rules
+3. Add more output formats
+4. Implement comparison tools
