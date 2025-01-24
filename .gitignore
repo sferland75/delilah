@@ -36,6 +36,13 @@ IHAs/
 *.docx
 *.doc
 
+# Binary/Large Files
+*.exe
+*.dll
+*.bin
+*.dat
+*.pak
+
 # Misc
 *.log
 .cache/
