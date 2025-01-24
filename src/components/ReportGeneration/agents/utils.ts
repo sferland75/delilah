@@ -1,4 +1,4 @@
-import { AgentContext, ReportSection } from './types';
+import { ReportSection } from './types';
 
 export const validateData = (data: any, requiredFields: string[]): boolean => {
   if (!data) return false;
@@ -47,22 +47,13 @@ export const createSection = (
   content: string | React.ReactNode,
   order: number,
   isValid: boolean = true,
-  errors: string[] = []
+  errors: string[] = [],
+  warnings: string[] = []
 ): ReportSection => ({
   title,
   content,
   order,
   isValid,
-  errors
+  errors,
+  warnings
 });
-
-export const mergeAgentResults = (
-  sections: ReportSection[],
-  options = { sortByOrder: true }
-): ReportSection[] => {
-  const merged = [...sections];
-  if (options.sortByOrder) {
-    merged.sort((a, b) => a.order - b.order);
-  }
-  return merged;
-};

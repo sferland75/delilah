@@ -9,20 +9,21 @@ The report generation system uses an intelligent agent-based architecture to tra
 ReportGeneration/
 ├── agents/               # Agent implementations
 │   ├── BaseAgent.ts     # Base agent class
-│   ├── MedicalHistoryAgent.ts
-│   ├── SymptomsAgent.ts
+│   ├── symptoms/        # Symptom processing agents
+│   │   ├── PhysicalSymptomsAgent.ts
+│   │   ├── CognitiveSymptomAgent.ts
+│   │   ├── EmotionalSymptomAgent.ts
+│   │   └── SymptomIntegrationAgent.ts
 │   ├── ADLAgent.ts
 │   ├── EnvironmentalAgent.ts
 │   └── AMAGuidesAgent.ts
 ├── templates/           # Report templates
-│   ├── ReportTemplates.ts
 │   └── README.md
 ├── utils/              # Utility functions
 │   └── validation.ts
 └── testing/           # Test utilities
     ├── ReportGenerationTest.tsx
     └── AgentTests.tsx
-
 ```
 
 ## Quick Start
@@ -54,14 +55,22 @@ const report = await orchestrator.generateReport();
 - Built-in data validation
 - Extensible processing pipeline
 - Error handling and reporting
+- Pattern recognition across domains
 
-### 2. Template System
+### 2. Symptom Processing
+- Physical symptom analysis
+- Cognitive symptom evaluation
+- Emotional/behavioral assessment
+- Pattern identification
+- Cross-domain integration
+
+### 3. Template System
 - Multiple detail levels (brief/standard/detailed)
 - Multiple output formats (plain/markdown/html)
 - Customizable section templates
 - Data formatters for complex fields
 
-### 3. Validation
+### 4. Validation
 - Field-level validation rules
 - Custom validation functions
 - Built-in common validators
@@ -71,7 +80,7 @@ const report = await orchestrator.generateReport();
 
 ### New Agent
 1. Create new agent class extending BaseAgent
-2. Implement process() and format() methods
+2. Implement required methods
 3. Add to ReportOrchestrator
 4. Add corresponding tests
 
@@ -81,12 +90,16 @@ class NewSectionAgent extends BaseAgent {
     super(context, orderNumber, 'Section Title', ['required.fields']);
   }
 
-  process(data: any) {
+  protected getSectionKeys(): string[] {
+    return ['field1', 'field2'];
+  }
+
+  async processData(data: any) {
     // Transform data
     return transformedData;
   }
 
-  format(processedData: any) {
+  protected formatByDetailLevel(data: any, level: string) {
     // Format for output
     return formattedContent;
   }
@@ -131,10 +144,13 @@ import { ReportGenerationTest } from './testing';
 ```
 
 ## Next Steps
-1. Add remaining report sections:
-   - Care Plans
-   - Recommendations
-   - Appendices
-2. Enhance validation rules
+1. Add remaining report sections
+2. Enhance pattern recognition
 3. Add more output formats
 4. Implement comparison tools
+
+## Guidelines
+- Ensure all agents implement required methods
+- Write comprehensive tests
+- Update documentation with changes
+- Follow TypeScript best practices

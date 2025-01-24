@@ -1,4 +1,4 @@
-import { ReportAgent, AgentContext, ReportSection } from './types';
+import { ReportAgent, AgentContext, ReportSection, ValidationResult, ProcessedData } from './types';
 import { validateData, createSection } from './utils';
 
 export abstract class BaseAgent implements ReportAgent {
@@ -6,6 +6,8 @@ export abstract class BaseAgent implements ReportAgent {
   protected sectionOrder: number;
   protected sectionTitle: string;
   protected requiredFields: string[];
+  protected validationRules: Map<string, (value: any) => boolean>;
+  protected warnings: string[] = [];
 
   constructor(
     context: AgentContext,
@@ -17,39 +19,109 @@ export abstract class BaseAgent implements ReportAgent {
     this.sectionOrder = sectionOrder;
     this.sectionTitle = sectionTitle;
     this.requiredFields = requiredFields;
+    this.validationRules = new Map();
+    this.initializeValidationRules();
   }
 
-  abstract process(data: any): any;
+  protected abstract initializeValidationRules(): void;
+  
+  abstract processData(data: any): Promise<ProcessedData>;
 
-  validate(data: any): boolean {
-    return validateData(data, this.requiredFields);
+  async validateData(data: any): Promise<ValidationResult> {
+    const errors: string[] = [];
+    this.warnings = [];
+
+    // Check required fields
+    if (!validateData(data, this.requiredFields)) {
+      errors.push('Required fields missing');
+    }
+
+    // Run custom validation rules
+    for (const [field, validator] of this.validationRules.entries()) {
+      const value = this.getField(data, field);
+      if (value !== null && !validator(value)) {
+        errors.push(`Invalid value for ${field}`);
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings: this.warnings
+    };
   }
 
-  format(processedData: any): string {
-    // Default implementation - should be overridden by specific agents
-    return JSON.stringify(processedData, null, 2);
+  format(processedData: ProcessedData): string {
+    const { detailLevel = 'standard' } = this.context.options || {};
+    return this.formatByDetailLevel(processedData, detailLevel);
   }
 
-  generateSection(data: any): ReportSection {
-    const isValid = this.validate(data);
-    const processedData = isValid ? this.process(data) : null;
-    const content = isValid ? this.format(processedData) : '';
-    
-    return createSection(
-      this.sectionTitle,
-      content,
-      this.sectionOrder,
-      isValid,
-      isValid ? [] : ['Required data missing or invalid']
-    );
+  protected abstract formatByDetailLevel(
+    data: ProcessedData,
+    detailLevel: 'brief' | 'standard' | 'detailed'
+  ): string;
+
+  async generateSection(data: any): Promise<ReportSection> {
+    try {
+      // Validate
+      const validationResult = await this.validateData(data);
+      
+      if (!validationResult.isValid) {
+        return createSection(
+          this.sectionTitle,
+          '',
+          this.sectionOrder,
+          false,
+          validationResult.errors,
+          validationResult.warnings
+        );
+      }
+
+      // Process
+      const processedData = await this.processData(data);
+
+      // Format
+      const content = this.format(processedData);
+
+      // Create section
+      return createSection(
+        this.sectionTitle,
+        content,
+        this.sectionOrder,
+        true,
+        [],
+        validationResult.warnings
+      );
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return createSection(
+        this.sectionTitle,
+        '',
+        this.sectionOrder,
+        false,
+        [this.formatError(errorMessage)],
+        []
+      );
+    }
   }
 
-  protected getField(data: any, path: string, defaultValue: any = null): any {
+  protected getField<T>(data: any, path: string, defaultValue: T | null = null): T | null {
     return path.split('.').reduce((obj, key) => 
       (obj && obj[key] !== undefined) ? obj[key] : defaultValue, data);
   }
 
-  protected formatError(error: string): string {
-    return `[${this.sectionTitle}] ${error}`;
+  protected addWarning(warning: string): void {
+    this.warnings.push(this.formatWarning(warning));
   }
+
+  protected formatError(error: string): string {
+    return `[${this.sectionTitle}] Error: ${error}`;
+  }
+
+  protected formatWarning(warning: string): string {
+    return `[${this.sectionTitle}] Warning: ${warning}`;
+  }
+
+  protected abstract getSectionKeys(): string[];
 }

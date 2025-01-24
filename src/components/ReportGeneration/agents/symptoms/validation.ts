@@ -1,6 +1,8 @@
-import { SymptomData } from '../agents/symptoms/SymptomTypes';
+import { SymptomData } from './SymptomTypes';
 
-export const validateSymptomData = (data: any): boolean => {
+type ValidatedSymptomData = Pick<SymptomData, 'severity' | 'frequency'>;
+
+export const validateSymptomData = (data: Partial<ValidatedSymptomData>): boolean => {
   if (!data) return false;
   
   // Required fields

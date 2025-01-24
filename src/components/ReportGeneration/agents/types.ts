@@ -1,9 +1,24 @@
 import type { Assessment } from '@/types';
 
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+export interface ProcessedData {
+  [key: string]: any;
+  metadata?: {
+    processedAt: Date;
+    version: string;
+  };
+}
+
 export interface ReportAgent {
-  process: (data: any) => any;
-  validate?: (data: any) => boolean;
-  format?: (data: any) => string;
+  validateData: (data: any) => Promise<ValidationResult>;
+  processData: (data: any) => Promise<ProcessedData>;
+  format: (data: ProcessedData) => string;
+  generateSection: (data: any) => Promise<ReportSection>;
 }
 
 export interface ReportSection {
@@ -12,6 +27,7 @@ export interface ReportSection {
   order: number;
   isValid: boolean;
   errors?: string[];
+  warnings?: string[];
 }
 
 export interface AgentContext {
@@ -23,3 +39,11 @@ export interface AgentContext {
     detailLevel?: 'brief' | 'standard' | 'detailed';
   };
 }
+
+export enum DetailLevel {
+  Brief = 'brief',
+  Standard = 'standard',
+  Detailed = 'detailed'
+}
+
+export type ValidationRule = (value: any) => boolean;
