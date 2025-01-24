@@ -14,44 +14,68 @@ import type { Assessment } from '@/types';
 
 interface ReportGeneratorProps {
   assessment: Assessment;
+  onError?: (error: Error, sectionName: string) => void;
 }
 
-export const ReportGenerator: React.FC<ReportGeneratorProps> = ({ assessment }) => {
+// Error boundary component for report sections
+class SectionErrorBoundary extends React.Component<{
+  children: React.ReactNode;
+  sectionName: string;
+  onError?: (error: Error, sectionName: string) => void;
+}> {
+  componentDidCatch(error: Error) {
+    this.props.onError?.(error, this.props.sectionName);
+  }
+
+  render() {
+    return this.props.children;
+  }
+}
+
+export const ReportGenerator: React.FC<ReportGeneratorProps> = ({ assessment, onError }) => {
+  const renderSection = (name: string, Component: React.ComponentType<{ assessment: Assessment }>) => (
+    <SectionErrorBoundary sectionName={name} onError={onError}>
+      <Component assessment={assessment} />
+    </SectionErrorBoundary>
+  );
+
   return (
     <Card className="w-full max-w-4xl mx-auto bg-white shadow-lg">
       <CardContent className="p-8">
-        <ReportHeader assessment={assessment} />
+        <SectionErrorBoundary sectionName="Header" onError={onError}>
+          <ReportHeader assessment={assessment} />
+        </SectionErrorBoundary>
         
         <ReportSection title="NATURE OF INJURY">
-          <NatureOfInjury assessment={assessment} />
+          {renderSection('Nature of Injury', NatureOfInjury)}
         </ReportSection>
 
         <ReportSection title="MEDICAL HISTORY">
-          <MedicalHistory assessment={assessment} />
+          {renderSection('Medical History', MedicalHistory)}
         </ReportSection>
 
         <ReportSection title="SYMPTOMS">
-          <Symptoms assessment={assessment} />
+          {renderSection('Symptoms', Symptoms)}
         </ReportSection>
 
         <ReportSection title="FUNCTIONAL ASSESSMENT">
-          <FunctionalAssessment assessment={assessment} />
+          {renderSection('Functional Assessment', FunctionalAssessment)}
         </ReportSection>
 
         <ReportSection title="ENVIRONMENTAL ASSESSMENT">
-          <EnvironmentalAssessment assessment={assessment} />
+          {renderSection('Environmental Assessment', EnvironmentalAssessment)}
         </ReportSection>
 
         <ReportSection title="ACTIVITIES OF DAILY LIVING">
-          <ADLAssessment assessment={assessment} />
+          {renderSection('ADL Assessment', ADLAssessment)}
         </ReportSection>
 
         <ReportSection title="AMA GUIDES ASSESSMENT">
-          <AMAGuidesAssessment assessment={assessment} />
+          {renderSection('AMA Guides Assessment', AMAGuidesAssessment)}
         </ReportSection>
 
         <ReportSection title="CARE NEEDS AND COSTS">
-          <CareAssessment assessment={assessment} />
+          {renderSection('Care Assessment', CareAssessment)}
         </ReportSection>
       </CardContent>
     </Card>
