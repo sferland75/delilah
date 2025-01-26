@@ -1,7 +1,16 @@
-import { ReportAgent, AgentContext, ReportSection, ValidationResult, ProcessedData } from './types';
-import { validateData, createSection } from './utils';
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings?: string[];
+}
 
-export abstract class BaseAgent implements ReportAgent {
+export interface AgentContext {
+  options?: {
+    detailLevel?: 'brief' | 'standard' | 'detailed';
+  };
+}
+
+export abstract class BaseAgent {
   protected context: AgentContext;
   protected sectionOrder: number;
   protected sectionTitle: string;
@@ -25,86 +34,9 @@ export abstract class BaseAgent implements ReportAgent {
 
   protected abstract initializeValidationRules(): void;
   
-  abstract processData(data: any): Promise<ProcessedData>;
+  abstract processData(data: any): Promise<any>;
 
-  async validateData(data: any): Promise<ValidationResult> {
-    const errors: string[] = [];
-    this.warnings = [];
-
-    // Check required fields
-    if (!validateData(data, this.requiredFields)) {
-      errors.push('Required fields missing');
-    }
-
-    // Run custom validation rules
-    for (const [field, validator] of this.validationRules.entries()) {
-      const value = this.getField(data, field);
-      if (value !== null && !validator(value)) {
-        errors.push(`Invalid value for ${field}`);
-      }
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      warnings: this.warnings
-    };
-  }
-
-  format(processedData: ProcessedData): string {
-    const { detailLevel = 'standard' } = this.context.options || {};
-    return this.formatByDetailLevel(processedData, detailLevel);
-  }
-
-  protected abstract formatByDetailLevel(
-    data: ProcessedData,
-    detailLevel: 'brief' | 'standard' | 'detailed'
-  ): string;
-
-  async generateSection(data: any): Promise<ReportSection> {
-    try {
-      // Validate
-      const validationResult = await this.validateData(data);
-      
-      if (!validationResult.isValid) {
-        return createSection(
-          this.sectionTitle,
-          '',
-          this.sectionOrder,
-          false,
-          validationResult.errors,
-          validationResult.warnings
-        );
-      }
-
-      // Process
-      const processedData = await this.processData(data);
-
-      // Format
-      const content = this.format(processedData);
-
-      // Create section
-      return createSection(
-        this.sectionTitle,
-        content,
-        this.sectionOrder,
-        true,
-        [],
-        validationResult.warnings
-      );
-
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      return createSection(
-        this.sectionTitle,
-        '',
-        this.sectionOrder,
-        false,
-        [this.formatError(errorMessage)],
-        []
-      );
-    }
-  }
+  protected abstract formatByDetailLevel(data: any, level: string): string;
 
   protected getField<T>(data: any, path: string, defaultValue: T | null = null): T | null {
     return path.split('.').reduce((obj, key) => 
@@ -122,6 +54,4 @@ export abstract class BaseAgent implements ReportAgent {
   protected formatWarning(warning: string): string {
     return `[${this.sectionTitle}] Warning: ${warning}`;
   }
-
-  protected abstract getSectionKeys(): string[];
 }
