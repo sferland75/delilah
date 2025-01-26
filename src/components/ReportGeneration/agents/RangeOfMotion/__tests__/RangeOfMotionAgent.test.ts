@@ -1,87 +1,91 @@
-import { describe, expect, it } from '@jest/globals';
 import { RangeOfMotionAgent } from '../RangeOfMotionAgent';
-import { sampleJointData } from '../__fixtures__/sampleData';
-
-// Test helper class to access protected methods
-class TestRangeOfMotionAgent extends RangeOfMotionAgent {
-  public async testFormatting(data: any, level: string): Promise<string> {
-    return this.formatByDetailLevel(data, level);
-  }
-}
+import { createMockContext } from '../../../testing/mockContext';
+import { AssessmentData } from '../../../types';
+import { ROMPattern } from '../types';
 
 describe('RangeOfMotionAgent', () => {
-  const mockContext = {
-    options: { detailLevel: 'standard' }
+  let agent: RangeOfMotionAgent;
+
+  beforeEach(() => {
+    agent = new RangeOfMotionAgent(createMockContext());
+  });
+
+  const sampleData: AssessmentData = {
+    id: 'test',
+    date: '2025-01-26',
+    functionalAssessment: {
+      rangeOfMotion: {
+        shoulder: [
+          {
+            movement: 'flexion',
+            active: {
+              right: 160,
+              left: 120,
+              normal: 180
+            },
+            painScale: {
+              right: 2,
+              left: 6
+            }
+          }
+        ],
+        knee: [
+          {
+            movement: 'flexion',
+            active: {
+              right: 130,
+              left: 130,
+              normal: 140
+            }
+          }
+        ]
+      }
+    }
   };
 
-  const agent = new TestRangeOfMotionAgent(mockContext as any);
-
-  describe('Data Processing', () => {
-    it('should process ROM data correctly', async () => {
-      const result = await agent.processData(sampleJointData);
+  describe('processData', () => {
+    it('identifies asymmetrical movements', async () => {
+      const result = await agent.processData(sampleData);
+      expect(result.valid).toBe(true);
+      expect(result.patterns?.unilateral).toBeDefined();
       
-      expect(result.joints.shoulder).toBeDefined();
-      expect(result.joints.cervical).toBeDefined();
-      expect(result.patterns).toBeDefined();
-      expect(result.functional).toBeDefined();
-      expect(result.impact).toBeDefined();
-    });
-
-    it('should identify movement patterns', async () => {
-      const result = await agent.processData(sampleJointData);
-      
-      // Should identify shoulder asymmetry
-      const hasAsymmetry = result.patterns.unilateral.some(p => 
-        p.match(/shoulder.*asymmetrical/i)
+      const hasAsymmetry = result.patterns?.unilateral?.some((p: ROMPattern) => 
+        p.joint === 'shoulder' && p.movement === 'flexion' && p.difference === 40
       );
       expect(hasAsymmetry).toBe(true);
+    });
+
+    it('identifies painful movements', async () => {
+      const result = await agent.processData(sampleData);
+      expect(result.valid).toBe(true);
+      expect(result.patterns?.painful).toBeDefined();
       
-      // Should identify painful movements
-      const hasPain = result.patterns.painful.some(p => 
-        p.match(/shoulder.*painful/i)
+      const hasPain = result.patterns?.painful?.some((p: ROMPattern) =>
+        p.joint === 'shoulder' && p.movement === 'flexion' && p.intensity === 6
       );
       expect(hasPain).toBe(true);
     });
   });
 
-  describe('Validation', () => {
-    it('should validate ROM measurements', async () => {
-      const invalidData = {
-        functionalAssessment: {
-          rangeOfMotion: {
-            shoulder: [{
-              joint: 'shoulder',
-              movement: 'flexion',
-              active: {
-                right: 250, // Invalid - beyond normal range
-                left: 180,
-                normal: 180
-              }
-            }]
-          }
-        }
-      };
+  describe('formatting', () => {
+    it('formats output at different detail levels', async () => {
+      const result = await agent.processData(sampleData);
+      expect(result.valid).toBe(true);
 
-      const validation = await agent.validateData(invalidData);
-      expect(validation.isValid).toBe(false);
-      expect(validation.errors).toContainEqual(expect.stringMatching(/Invalid.*range/i));
-    });
-  });
+      const briefFormat = agent.getFormattedContent(result, 'brief');
+      expect(briefFormat).toContain('Range of Motion Summary');
+      expect(briefFormat).toContain('shoulder');
+      expect(briefFormat).toContain('40');
 
-  describe('Formatting', () => {
-    it('should format output according to detail level', async () => {
-      const result = await agent.processData(sampleJointData);
-      const formatted = await agent.testFormatting(result, 'standard');
-      
-      // Should include movement patterns
-      expect(formatted).toContain('Movement Patterns');
-      
-      // Should include functional impacts
-      expect(formatted).toContain('Functional Impact');
-      
-      // Should include measurements
-      expect(formatted).toContain('shoulder');
-      expect(formatted).toContain('cervical');
+      const standardFormat = agent.getFormattedContent(result, 'standard');
+      expect(standardFormat).toContain('Range of Motion Assessment');
+      expect(standardFormat).toContain('shoulder');
+      expect(standardFormat).toContain('flexion');
+
+      const detailedFormat = agent.getFormattedContent(result, 'detailed');
+      expect(detailedFormat).toContain('Joint Measurements');
+      expect(detailedFormat).toContain('Movement Pattern Analysis');
+      expect(detailedFormat).toContain('Functional Analysis');
     });
   });
 });

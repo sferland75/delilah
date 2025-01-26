@@ -1,57 +1,106 @@
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings?: string[];
-}
-
-export interface AgentContext {
-  options?: {
-    detailLevel?: 'brief' | 'standard' | 'detailed';
-  };
-}
+import { AgentContext, AssessmentData, ValidationResult, ReportSection } from '../types';
+import _ from 'lodash';
 
 export abstract class BaseAgent {
   protected context: AgentContext;
-  protected sectionOrder: number;
-  protected sectionTitle: string;
+  protected orderNumber: number;
+  protected sectionName: string;
   protected requiredFields: string[];
   protected validationRules: Map<string, (value: any) => boolean>;
-  protected warnings: string[] = [];
 
-  constructor(
-    context: AgentContext,
-    sectionOrder: number,
-    sectionTitle: string,
-    requiredFields: string[] = []
-  ) {
+  constructor(context: AgentContext, orderNumber: number, sectionName: string, requiredFields: string[] = []) {
     this.context = context;
-    this.sectionOrder = sectionOrder;
-    this.sectionTitle = sectionTitle;
+    this.orderNumber = orderNumber;
+    this.sectionName = sectionName;
     this.requiredFields = requiredFields;
     this.validationRules = new Map();
-    this.initializeValidationRules();
   }
 
-  protected abstract initializeValidationRules(): void;
-  
-  abstract processData(data: any): Promise<any>;
-
-  protected abstract formatByDetailLevel(data: any, level: string): string;
-
-  protected getField<T>(data: any, path: string, defaultValue: T | null = null): T | null {
-    return path.split('.').reduce((obj, key) => 
-      (obj && obj[key] !== undefined) ? obj[key] : defaultValue, data);
+  protected getField(data: any, path: string, defaultValue: any = undefined): any {
+    return _.get(data, path, defaultValue);
   }
 
-  protected addWarning(warning: string): void {
-    this.warnings.push(this.formatWarning(warning));
+  async validateData(data: AssessmentData): Promise<ValidationResult> {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    // Check required fields
+    for (const field of this.requiredFields) {
+      const value = this.getField(data, field);
+      if (value === undefined) {
+        errors.push(`Missing required field: ${field}`);
+      }
+    }
+
+    // Run validation rules
+    for (const [field, rule] of this.validationRules.entries()) {
+      const value = this.getField(data, field);
+      if (value !== undefined && !rule(value)) {
+        errors.push(`Invalid value for field: ${field}`);
+      }
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings
+    };
   }
 
-  protected formatError(error: string): string {
-    return `[${this.sectionTitle}] Error: ${error}`;
+  abstract processData(data: AssessmentData): Promise<any>;
+
+  format(data: any): string {
+    return this.formatByDetailLevel(data, this.context.config?.detailLevel || 'standard');
   }
 
-  protected formatWarning(warning: string): string {
-    return `[${this.sectionTitle}] Warning: ${warning}`;
+  public getFormattedContent(data: any, level?: "brief" | "standard" | "detailed"): string {
+    return this.formatByDetailLevel(data, level || 'standard');
+  }
+
+  protected formatByDetailLevel(data: any, level: "brief" | "standard" | "detailed"): string {
+    switch (level) {
+      case 'brief':
+        return this.formatBrief(data);
+      case 'detailed':
+        return this.formatDetailed(data);
+      default:
+        return this.formatStandard(data);
+    }
+  }
+
+  protected abstract formatBrief(data: any): string;
+  protected abstract formatDetailed(data: any): string;
+  protected abstract formatStandard(data: any): string;
+
+  public getOrderNumber(): number {
+    return this.orderNumber;
+  }
+
+  public getSectionName(): string {
+    return this.sectionName;
+  }
+
+  async generateSection(data: AssessmentData): Promise<ReportSection> {
+    const validationResult = await this.validateData(data);
+    if (!validationResult.valid) {
+      return {
+        orderNumber: this.orderNumber,
+        sectionName: this.sectionName,
+        content: validationResult.errors.join('\n'),
+        valid: false,
+        title: this.sectionName,
+        errors: validationResult.errors
+      };
+    }
+
+    const processedData = await this.processData(data);
+    return {
+      orderNumber: this.orderNumber,
+      sectionName: this.sectionName,
+      content: this.getFormattedContent(processedData, this.context.config?.detailLevel),
+      valid: processedData.valid,
+      title: this.sectionName,
+      errors: processedData.errors
+    };
   }
 }

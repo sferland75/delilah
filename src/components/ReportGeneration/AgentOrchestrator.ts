@@ -1,83 +1,44 @@
-import { RangeOfMotionAgent } from './agents/RangeOfMotion';
-import { ADLAgent } from './agents/ADLAgent';
+import { AssessmentData, ReportSection, AgentContext } from './types';
+import { BaseAgent } from './agents/BaseAgent';
+import { DocumentationAgent } from './agents/DocumentationAgent';
+import { MobilityAgent } from './agents/MobilityAgent';
+import { RangeOfMotionAgent } from './agents/RangeOfMotion/RangeOfMotionAgent';
 import { TransfersAgent } from './agents/TransfersAgent';
-import { AgentContext } from './agents/BaseAgent';
+import { BasicADLAgent } from './agents/adl/BasicADLAgent';
+import { IADLAgent } from './agents/adl/IADLAgent';
+import { PhysicalSymptomsAgent } from './agents/symptoms/PhysicalSymptomsAgent';
+import { CognitiveSymptomAgent } from './agents/symptoms/CognitiveSymptomAgent';
+import { EmotionalSymptomAgent } from './agents/symptoms/EmotionalSymptomAgent';
+import { SymptomIntegrationAgent } from './agents/symptoms/SymptomIntegrationAgent';
 
 export class AgentOrchestrator {
-  private romAgent: RangeOfMotionAgent;
-  private adlAgent: ADLAgent;
-  private transfersAgent: TransfersAgent;
-  private context: AgentContext;
+  private agents: Array<BaseAgent>;
 
   constructor(context: AgentContext) {
-    this.context = context;
-    this.romAgent = new RangeOfMotionAgent(context);
-    this.adlAgent = new ADLAgent(context);
-    this.transfersAgent = new TransfersAgent(context);
-  }
-
-  async processAssessment(data: any) {
-    // Process ROM data
-    const romResults = await this.romAgent.processData(data);
+    // Initialize all agents in order
+    this.agents = [
+      new DocumentationAgent(context),
+      new MobilityAgent(context),
+      new RangeOfMotionAgent(context),
+      new TransfersAgent(context),
+      new BasicADLAgent(context),
+      new IADLAgent(context),
+      new PhysicalSymptomsAgent(context),
+      new CognitiveSymptomAgent(context),
+      new EmotionalSymptomAgent(context),
+      new SymptomIntegrationAgent(context)
+    ];
     
-    // Process ADL data with ROM context
-    const adlResults = await this.adlAgent.processData({
-      ...data,
-      context: {
-        rom: {
-          restrictedMovements: romResults.patterns.restricted,
-          painfulMovements: romResults.patterns.painful
-        }
-      }
-    });
-
-    // Process transfers with ROM and ADL context
-    const transferResults = await this.transfersAgent.processData({
-      ...data,
-      context: {
-        rom: {
-          restrictions: romResults.patterns.restricted,
-          pain: romResults.patterns.painful
-        },
-        adl: {
-          assistanceNeeds: adlResults.assistanceNeeds
-        }
-      }
-    });
-
-    // Compile final report
-    return {
-      rangeOfMotion: romResults,
-      adl: adlResults,
-      transfers: transferResults,
-      summary: this.generateSummary(romResults, adlResults, transferResults)
-    };
+    // Sort by order number
+    this.agents.sort((a, b) => a.getOrderNumber() - b.getOrderNumber());
   }
 
-  private generateSummary(rom: any, adl: any, transfers: any) {
-    return {
-      keyFindings: [
-        ...rom.impact,
-        ...adl.impact,
-        ...transfers.impact
-      ],
-      recommendations: this.correlateRecommendations(rom, adl, transfers)
-    };
-  }
+  async generateReport(data: AssessmentData): Promise<ReportSection[]> {
+    // Generate all sections in parallel
+    const sections = await Promise.all(
+      this.agents.map(agent => agent.generateSection(data))
+    );
 
-  private correlateRecommendations(rom: any, adl: any, transfers: any) {
-    const recommendations = [];
-
-    // Correlate ROM and ADL impacts
-    if (rom.patterns.restricted.length > 0 && adl.assistanceNeeds.length > 0) {
-      recommendations.push('Consider adaptive equipment to compensate for ROM limitations');
-    }
-
-    // Correlate ROM and transfer impacts
-    if (rom.patterns.painful.length > 0 && transfers.risks.length > 0) {
-      recommendations.push('Transfer training needed with focus on pain management');
-    }
-
-    return recommendations;
+    return sections;
   }
 }

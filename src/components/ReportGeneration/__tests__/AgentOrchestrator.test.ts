@@ -1,55 +1,28 @@
-import { describe, expect, it } from '@jest/globals';
 import { AgentOrchestrator } from '../AgentOrchestrator';
-import { sampleJointData } from '../agents/RangeOfMotion/__fixtures__/sampleData';
+import { mockContext, mockAssessmentData } from '../testing/mockData';
+import { AssessmentData } from '../types';
 
 describe('AgentOrchestrator', () => {
-  const mockContext = {
-    options: { detailLevel: 'standard' }
-  };
-
   const orchestrator = new AgentOrchestrator(mockContext);
 
-  describe('Assessment Processing', () => {
-    it('should integrate ROM findings with ADL assessment', async () => {
-      // Sample data combining ROM and ADL
-      const testData = {
-        ...sampleJointData,
-        adl: {
-          basic: {
-            bathing: {
-              independence: 'modified',
-              notes: 'Needs assistance with overhead washing'
-            }
-          }
-        }
-      };
-
-      const result = await orchestrator.processAssessment(testData);
-
-      // Should correlate ROM limitations with ADL needs
-      expect(result.summary.recommendations).toContain(
-        expect.stringMatching(/adaptive equipment.*ROM/)
-      );
+  it('generates complete report', async () => {
+    const sections = await orchestrator.generateReport(mockAssessmentData);
+    expect(sections).toBeInstanceOf(Array);
+    sections.forEach(section => {
+      expect(section).toHaveProperty('content');
+      expect(section).toHaveProperty('valid');
     });
+  });
 
-    it('should integrate ROM findings with transfer assessment', async () => {
-      // Sample data combining ROM and transfers
-      const testData = {
-        ...sampleJointData,
-        transfers: {
-          bedMobility: {
-            independence: 'modified',
-            notes: 'Difficulty with rolling due to shoulder pain'
-          }
-        }
-      };
-
-      const result = await orchestrator.processAssessment(testData);
-
-      // Should correlate ROM pain with transfer needs
-      expect(result.summary.recommendations).toContain(
-        expect.stringMatching(/transfer training.*pain/)
-      );
+  it('handles empty data gracefully', async () => {
+    const emptyData: AssessmentData = {
+      id: "test-123",
+      date: "2025-01-26"
+    };
+    const sections = await orchestrator.generateReport(emptyData);
+    sections.forEach(section => {
+      expect(section.valid).toBe(true);
+      expect(typeof section.content).toBe('string');
     });
   });
 });

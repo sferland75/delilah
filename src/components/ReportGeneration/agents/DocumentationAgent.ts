@@ -1,398 +1,169 @@
 import { BaseAgent } from './BaseAgent';
-import { AgentContext, ProcessedData } from './types';
-import { formatDate } from './utils';
+import { AgentContext, AssessmentData } from '../types';
+import _ from 'lodash';
 
-interface TimelineEntry {
-  date: string;
-  event: string;
-  source: string;
-  type: 'medical' | 'legal';
-  significance: 'high' | 'medium' | 'low';
-}
-
-interface DocumentSummary {
+interface Document {
   title: string;
   date: string;
   type: string;
+  summary?: string;
   provider?: string;
-  keyFindings: string[];
-  recommendations: string[];
-  significance: 'high' | 'medium' | 'low';
+  relevantFindings?: string[];
+  recommendations?: string[];
 }
 
-interface DocumentationData extends ProcessedData {
-  medical: DocumentSummary[];
-  legal: DocumentSummary[];
-  keyFindings: string[];
+export interface DocumentationOutput {
+  valid: boolean;
+  medicalDocumentation: Document[];
+  legalDocumentation: Document[];
+  otherDocumentation?: Document[];
   recommendations: string[];
-  timeline: TimelineEntry[];
-  synthesis: {
-    primaryConditions: string[];
-    treatmentProgression: string[];
-    barriersToRecovery: string[];
-    prognosis: string[];
-  };
+  errors?: string[];
 }
 
 export class DocumentationAgent extends BaseAgent {
-  private keywordPatterns = {
-    findings: [
-      /(?:reveals?|shows?|indicates?|demonstrates?)\s+([^.]+)/i,
-      /(?:diagnosed|assessment|impression)(?:\s+(?:of|with|as))?\s+([^.]+)/i,
-      /(?:presents?|presenting)\s+with\s+([^.]+)/i,
-      /MRI\s+shows?\s+([^.]+)/i
-    ],
-    recommendations: [
-      /recommend(?:ed|s|ing)?\s+([^.]+)/i,
-      /advised?\s+to\s+([^.]+)/i,
-      /(?:should|needs to|must)\s+([^.]+)/i,
-      /treatment\s+plan\s+includes?\s+([^.]+)/i,
-      /include[sd]?\s+([^.]+)/i,
-      /to\s+use\s+([^.]+)/i
-    ],
-    prognosis: [
-      /prognosis\s+(?:is|remains)\s+([^.]+)/i,
-      /expected\s+(?:to|that)\s+([^.]+)/i,
-      /(?:likely|unlikely)\s+to\s+([^.]+)/i,
-      /may\s+(?:be|require)\s+([^.]+)/i
-    ],
-    barriers: [
-      /(?:limited|limiting)\s+(?:by|due to)\s+([^.]+)/i,
-      /barrier(?:s)?\s+(?:include|are)\s+([^.]+)/i,
-      /complicated\s+by\s+([^.]+)/i
-    ]
-  };
-
-  constructor(context: AgentContext, sectionOrder: number) {
-    super(context, sectionOrder, 'Documentation', []);
+  constructor(context: AgentContext) {
+    super(context, 1.1, 'Documentation Review', ['documentation']);
   }
 
-  protected initializeValidationRules(): void {
-    this.validationRules.set('documentation.medicalDocumentation[].date', (value: string) => {
-      if (!value) return true;
-      return !isNaN(new Date(value).getTime());
+  async processData(data: AssessmentData): Promise<DocumentationOutput> {
+    const docs = _.get(data, 'documentation', {
+      medicalDocumentation: [],
+      legalDocumentation: []
     });
-
-    this.validationRules.set('documentation.legalDocumentation[].date', (value: string) => {
-      if (!value) return true;
-      return !isNaN(new Date(value).getTime());
-    });
-  }
-
-  protected getSectionKeys(): string[] {
-    return ['medicalDocumentation', 'legalDocumentation'];
-  }
-
-  async processData(data: any): Promise<DocumentationData> {
-    const { documentation } = data;
     
-    if (!documentation?.medicalDocumentation?.length && !documentation?.legalDocumentation?.length) {
-      this.addWarning('No documentation provided for review');
-    }
+    // Process documents by category
+    const medicalDocs = this.processDocuments(docs.medicalDocumentation || []);
+    const legalDocs = this.processDocuments(docs.legalDocumentation || []);
 
-    const medical = this.processMedicalDocuments(documentation.medicalDocumentation || []);
-    const legal = this.processLegalDocuments(documentation.legalDocumentation || []);
-
-    const keyFindings = this.extractKeyFindings([...medical, ...legal])
-        .map(finding => this.capitalizeFirstLetter(finding));
-    const recommendations = this.extractRecommendations([...medical, ...legal])
-        .map(rec => this.capitalizeFirstLetter(rec));
-
-    const timeline = this.createTimeline(medical, legal);
-    const synthesis = this.synthesizeInformation(medical, timeline);
+    // Generate recommendations
+    const recommendations = this.generateRecommendations(medicalDocs, legalDocs);
 
     return {
-      metadata: {
-        processedAt: new Date(),
-        version: '1.0'
-      },
-      medical,
-      legal,
-      keyFindings,
-      recommendations,
-      timeline,
-      synthesis
+      valid: true,
+      medicalDocumentation: medicalDocs,
+      legalDocumentation: legalDocs,
+      recommendations
     };
   }
 
-  private processMedicalDocuments(documents: any[]): DocumentSummary[] {
-    return documents.map(doc => {
-      if (!doc.date) {
-        this.addWarning(`Document "${doc.title}" missing date`);
-      }
-
-      const fullText = `${doc.title || ''}. ${doc.notes || ''}`;
-      const findings = this.extractPatternMatches(fullText, this.keywordPatterns.findings);
-      const explicitRecs = this.extractPatternMatches(fullText, this.keywordPatterns.recommendations);
-      
-      // Convert findings to recommendations where appropriate
-      const impliedRecs = findings
-        .filter(finding => 
-          finding.toLowerCase().includes('limited ROM') ||
-          finding.toLowerCase().includes('rotator cuff tear')
-        )
-        .map(finding => {
-          if (finding.toLowerCase().includes('limited ROM')) return 'Gentle ROM exercises';
-          if (finding.toLowerCase().includes('rotator cuff tear')) return 'Conservative treatment';
-          return null;
-        })
-        .filter(Boolean) as string[];
-
-      return {
-        title: doc.title || 'Untitled Document',
-        date: doc.date || 'Date not specified',
-        type: 'medical',
-        provider: this.extractProvider(doc.title || '', doc.notes || ''),
-        keyFindings: findings,
-        recommendations: [...explicitRecs, ...impliedRecs],
-        significance: this.assessSignificance(doc)
-      };
-    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  private processDocuments(docs: any[]): Document[] {
+    return docs.map(doc => ({
+      title: doc.title || 'Untitled Document',
+      date: doc.date || 'Unknown date',
+      type: doc.type || 'Unknown type',
+      summary: doc.summary,
+      provider: doc.provider,
+      relevantFindings: doc.findings || [],
+      recommendations: doc.recommendations || []
+    }));
   }
 
-  private processLegalDocuments(documents: any[]): DocumentSummary[] {
-    return documents.map(doc => {
-      if (!doc.date) {
-        this.addWarning(`Legal document "${doc.title}" missing date`);
-      }
+  private generateRecommendations(medicalDocs: Document[], legalDocs: Document[]): string[] {
+    const recommendations = new Set<string>();
 
-      const fullText = `${doc.title || ''}. ${doc.notes || ''}`;
-      
-      return {
-        title: doc.title || 'Untitled Legal Document',
-        date: doc.date || 'Date not specified',
-        type: 'legal',
-        keyFindings: this.extractPatternMatches(fullText, this.keywordPatterns.findings),
-        recommendations: this.extractPatternMatches(fullText, this.keywordPatterns.recommendations),
-        significance: this.assessSignificance(doc)
-      };
-    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }
+    // Collect recommendations from documents
+    [...medicalDocs, ...legalDocs].forEach(doc => {
+      doc.recommendations?.forEach(rec => recommendations.add(rec));
+    });
 
-  private extractProvider(title: string, notes: string): string | undefined {
-    const providerPatterns = [
-      /(?:Dr\.|Doctor)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?/,
-      /[A-Z][a-z]+\s+(?:Clinic|Hospital|Centre|Center)/,
-      /(?:PT|OT|SLP|MD):\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?/
-    ];
-
-    for (const pattern of providerPatterns) {
-      const match = (title + ' ' + notes).match(pattern);
-      if (match) return match[0];
+    // Add recommendations based on missing documentation
+    if (medicalDocs.length === 0) {
+      recommendations.add('Obtain recent medical records');
     }
 
-    return undefined;
+    const oldestDoc = this.findOldestDocument([...medicalDocs, ...legalDocs]);
+    if (oldestDoc && this.isDocumentOld(oldestDoc.date)) {
+      recommendations.add('Update medical documentation');
+    }
+
+    return Array.from(recommendations);
   }
 
-  private extractKeyFindings(documents: DocumentSummary[]): string[] {
-    const findings = documents.flatMap(doc => doc.keyFindings);
-    return [...new Set(findings)].filter(Boolean);
+  private findOldestDocument(docs: Document[]): Document | null {
+    return docs.reduce((oldest, current) => {
+      const currentDate = new Date(current.date);
+      return !oldest || currentDate < new Date(oldest.date) ? current : oldest;
+    }, null as Document | null);
   }
 
-  private extractRecommendations(documents: DocumentSummary[]): string[] {
-    const recommendations = documents.flatMap(doc => doc.recommendations);
-    return [...new Set(recommendations)].filter(Boolean);
+  private isDocumentOld(dateStr: string): boolean {
+    const docDate = new Date(dateStr);
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    return docDate < sixMonthsAgo;
   }
 
-  private createTimeline(medical: DocumentSummary[], legal: DocumentSummary[]): TimelineEntry[] {
-    const timeline: TimelineEntry[] = [
-      ...medical.map(doc => ({
-        date: doc.date,
-        event: `${doc.title}: ${doc.keyFindings.join('. ')}`,
-        source: doc.provider || doc.title,
-        type: 'medical' as const,
-        significance: doc.significance
-      })),
-      ...legal.map(doc => ({
-        date: doc.date,
-        event: doc.title,
-        source: 'Legal Documentation',
-        type: 'legal' as const,
-        significance: doc.significance
-      }))
-    ];
+  protected override formatBrief(data: DocumentationOutput): string {
+    const sections = ['Documentation Summary'];
 
-    return timeline.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    // Medical documentation
+    if (data.medicalDocumentation.length > 0) {
+      sections.push(`\nMedical Documentation: ${data.medicalDocumentation.length} documents`);
+    }
+
+    // Legal documentation
+    if (data.legalDocumentation.length > 0) {
+      sections.push(`\nLegal Documentation: ${data.legalDocumentation.length} documents`);
+    }
+
+    // Urgent recommendations
+    const urgentRecs = data.recommendations.filter(rec => 
+      rec.toLowerCase().includes('urgent') || 
+      rec.toLowerCase().includes('immediate') ||
+      rec.toLowerCase().includes('required')
+    );
+
+    if (urgentRecs.length > 0) {
+      sections.push('\nUrgent Needs:', ...urgentRecs.map(rec => `- ${rec}`));
+    }
+
+    return sections.join('\n');
   }
 
-  private synthesizeInformation(medical: DocumentSummary[], timeline: TimelineEntry[]) {
-    return {
-      primaryConditions: this.identifyPrimaryConditions(medical),
-      treatmentProgression: this.analyzeTreatmentProgression(timeline),
-      barriersToRecovery: this.identifyBarriers(medical),
-      prognosis: this.extractPrognosis(medical)
-    };
-  }
+  protected override formatDetailed(data: DocumentationOutput): string {
+    const sections = ['Documentation Review'];
 
-  private identifyPrimaryConditions(medical: DocumentSummary[]): string[] {
-    const conditions = medical.flatMap(doc => doc.keyFindings)
-      .filter(finding => 
-        finding.toLowerCase().includes('diagnosis') ||
-        finding.toLowerCase().includes('condition') ||
-        finding.toLowerCase().includes('presents with')
-      );
-    
-    return [...new Set(conditions)];
-  }
-
-  private analyzeTreatmentProgression(timeline: TimelineEntry[]): string[] {
-    const progression: string[] = [];
-    let lastMedicalEvent: TimelineEntry | null = null;
-
-    timeline.forEach(event => {
-      if (event.type === 'medical') {
-        if (lastMedicalEvent) {
-          const daysBetween = this.daysBetween(
-            new Date(event.date),
-            new Date(lastMedicalEvent.date)
-          );
-          if (daysBetween > 30) {
-            progression.push(`${daysBetween} days between ${event.source} and ${lastMedicalEvent.source}`);
-          }
+    // Medical documentation
+    if (data.medicalDocumentation.length > 0) {
+      sections.push('\nMedical Documentation:');
+      data.medicalDocumentation.forEach(doc => {
+        sections.push(`\n${doc.type} - ${doc.date}`);
+        if (doc.provider) sections.push(`Provider: ${doc.provider}`);
+        if (doc.summary) sections.push(`Summary: ${doc.summary}`);
+        
+        if (doc.relevantFindings?.length) {
+          sections.push('Findings:');
+          doc.relevantFindings.forEach(finding => sections.push(`- ${finding}`));
         }
-        lastMedicalEvent = event;
-      }
-    });
-
-    return progression;
-  }
-
-  private daysBetween(date1: Date, date2: Date): number {
-    const oneDay = 24 * 60 * 60 * 1000;
-    return Math.round(Math.abs((date1.getTime() - date2.getTime()) / oneDay));
-  }
-
-  private identifyBarriers(medical: DocumentSummary[]): string[] {
-    return medical.flatMap(doc => 
-      this.extractPatternMatches(doc.keyFindings.join('. '), this.keywordPatterns.barriers)
-    );
-  }
-
-  private extractPrognosis(medical: DocumentSummary[]): string[] {
-    return medical.flatMap(doc => 
-      this.extractPatternMatches(doc.keyFindings.join('. '), this.keywordPatterns.prognosis)
-    );
-  }
-
-  private extractPatternMatches(text: string, patterns: RegExp[]): string[] {
-    if (!text) return [];
-    
-    return patterns.flatMap(pattern => {
-      const matches = text.match(pattern);
-      return matches ? [matches[1].trim()] : [];
-    });
-  }
-
-  private assessSignificance(doc: any): 'high' | 'medium' | 'low' {
-    const text = `${doc.title || ''} ${doc.notes || ''}`.toLowerCase();
-    
-    if (
-      text.includes('urgent') ||
-      text.includes('immediate') ||
-      text.includes('critical') ||
-      text.includes('severe') ||
-      text.includes('significant')
-    ) {
-      return 'high';
+      });
     }
 
-    if (
-      text.includes('recommend') ||
-      text.includes('should') ||
-      text.includes('needs') ||
-      text.includes('requires')
-    ) {
-      return 'medium';
+    // Legal documentation
+    if (data.legalDocumentation.length > 0) {
+      sections.push('\nLegal Documentation:');
+      data.legalDocumentation.forEach(doc => {
+        sections.push(`\n${doc.type} - ${doc.date}`);
+        if (doc.provider) sections.push(`Provider: ${doc.provider}`);
+        if (doc.summary) sections.push(`Summary: ${doc.summary}`);
+      });
     }
 
-    return 'low';
-  }
-
-  private capitalizeFirstLetter(text: string): string {
-    return text.charAt(0).toUpperCase() + text.slice(1);
-  }
-
-  protected formatByDetailLevel(data: DocumentationData, detailLevel: 'brief' | 'standard' | 'detailed'): string {
-    switch (detailLevel) {
-      case 'brief':
-        return this.formatBrief(data);
-      case 'standard':
-        return this.formatStandard(data);
-      case 'detailed':
-        return this.formatDetailed(data);
-      default:
-        return this.formatStandard(data);
+    // Other documentation
+    if (data.otherDocumentation?.length) {
+      sections.push('\nOther Documentation:');
+      data.otherDocumentation.forEach(doc => {
+        sections.push(`\n${doc.type} - ${doc.date}`);
+        if (doc.summary) sections.push(`Summary: ${doc.summary}`);
+      });
     }
-  }
 
-  private formatBrief(data: DocumentationData): string {
-    const sections = [
-      '## Documentation Summary',
-      '',
-      '### Key Findings',
-      ...data.keyFindings.map(finding => `- ${finding}`),
-      '',
-      '### Primary Recommendations',
-      ...data.recommendations.map(rec => `- ${rec}`)
-    ];
+    // Recommendations
+    if (data.recommendations.length > 0) {
+      sections.push('\nRecommendations:');
+      data.recommendations.forEach(rec => sections.push(`- ${rec}`));
+    }
 
-    return sections.filter(Boolean).join('\n');
-  }
-
-  private formatStandard(data: DocumentationData): string {
-    const sections = [
-      '## Documentation Review',
-      '',
-      '### Medical Documentation',
-      ...data.medical.map(doc => [
-        `#### ${doc.title} (${formatDate(doc.date)})`,
-        doc.provider ? `Provider: ${doc.provider}` : '',
-        'Key Findings:',
-        ...doc.keyFindings.map(finding => `- ${finding}`),
-        'Recommendations:',
-        ...doc.recommendations.map(rec => `- ${rec}`),
-        ''
-      ].filter(Boolean).join('\n')),
-      '',
-      '### Legal Documentation',
-      ...data.legal.map(doc => [
-        `#### ${doc.title} (${formatDate(doc.date)})`,
-        'Key Points:',
-        ...doc.keyFindings.map(finding => `- ${finding}`),
-        ''
-      ].filter(Boolean).join('\n'))
-    ];
-
-    return sections.filter(Boolean).join('\n');
-  }
-
-  private formatDetailed(data: DocumentationData): string {
-    const standardFormat = this.formatStandard(data);
-    
-    const additionalSections = [
-      '',
-      '### Treatment Timeline',
-      ...data.timeline
-        .filter(entry => entry.type === 'medical')
-        .map(entry => `- ${formatDate(entry.date)}: ${entry.event}`),
-      '',
-      '### Treatment Recommendations',
-      ...data.recommendations.map(rec => `- ${rec}`),
-      '',
-      '### Treatment Progression Analysis',
-      ...data.synthesis.treatmentProgression.map(prog => `- ${prog}`),
-      '',
-      '### Timeline of Care',
-      ...data.timeline
-        .map(entry => `- ${formatDate(entry.date)}: ${entry.source}`),
-      '',
-      '### Barriers to Recovery',
-      ...data.synthesis.barriersToRecovery.map(barrier => `- ${barrier}`),
-      '',
-      '### Prognosis',
-      ...data.synthesis.prognosis.map(prog => `- ${prog}`)
-    ];
-
-    return standardFormat + '\n' + additionalSections.filter(Boolean).join('\n');
+    return sections.join('\n');
   }
 }

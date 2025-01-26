@@ -1,44 +1,43 @@
+export interface ROMRange {
+  right?: number;
+  left?: number;
+  normal?: number;
+}
+
+export interface ROMEndFeel {
+  right?: string;
+  left?: string;
+}
+
 export interface ROMData {
-  joint: string;
   movement: string;
-  active: {
-    right?: number;
-    left?: number;
-    normal?: number;  // Normal ROM for comparison
-  };
-  passive?: {
-    right?: number;
-    left?: number;
-  };
-  painScale?: {
-    right?: number;
-    left?: number;
-  };
-  endFeel?: {
-    right?: string;
-    left?: string;
-  };
+  active: ROMRange;
+  passive?: ROMRange;
+  painScale?: ROMRange;
+  endFeel?: ROMEndFeel;
   notes?: string;
 }
 
+export interface ROMPattern {
+  joint: string;
+  movement: string;
+  side?: 'right' | 'left' | 'bilateral';
+  difference?: number;
+  intensity?: number;
+  description?: string;
+}
+
 export interface JointROM {
-  cervical?: ROMData[];
-  shoulder?: ROMData[];
-  elbow?: ROMData[];
-  wrist?: ROMData[];
-  hip?: ROMData[];
-  knee?: ROMData[];
-  ankle?: ROMData[];
-  spine?: ROMData[];
+  [key: string]: ROMData[];
 }
 
 export interface ROMAnalysis {
   joints: JointROM;
   patterns: {
-    bilateral: string[];
-    unilateral: string[];
-    painful: string[];
-    restricted: string[];
+    bilateral: ROMPattern[];
+    unilateral: ROMPattern[];
+    painful: ROMPattern[];
+    restricted: ROMPattern[];
   };
   functional: {
     upperExtremity: string[];

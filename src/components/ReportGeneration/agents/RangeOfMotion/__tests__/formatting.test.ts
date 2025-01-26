@@ -1,71 +1,93 @@
-import { describe, expect, it } from '@jest/globals';
-import { formatBrief, formatStandard, formatDetailed } from '../formatting';
-import { sampleJointData } from '../__fixtures__/sampleData';
-import { ROMAnalysis } from '../types';
+import { ROMAnalysis, ROMPattern } from '../types';
+import { formatROM } from '../formatting';
 
 describe('ROM Formatting', () => {
-  const sampleAnalysis: ROMAnalysis = {
-    joints: sampleJointData.functionalAssessment.rangeOfMotion,
-    patterns: {
-      bilateral: [],
-      unilateral: ['shoulder flexion asymmetrical (70° difference)'],
-      painful: ['shoulder flexion painful'],
-      restricted: ['shoulder flexion severely restricted']
+  const samplePatterns: Record<string, ROMPattern[]> = {
+    unilateral: [{
+      joint: 'shoulder',
+      movement: 'flexion',
+      side: 'right',
+      difference: 70
+    }],
+    painful: [{
+      joint: 'shoulder',
+      movement: 'flexion',
+      side: 'left',
+      intensity: 6
+    }],
+    restricted: [{
+      joint: 'shoulder',
+      movement: 'flexion',
+      description: 'severely restricted'
+    }],
+    bilateral: []
+  };
+
+  const sampleData: ROMAnalysis = {
+    joints: {
+      shoulder: [{
+        movement: 'flexion',
+        active: {
+          right: 160,
+          left: 90,
+          normal: 180
+        },
+        painScale: {
+          right: 2,
+          left: 6
+        }
+      }]
     },
+    patterns: samplePatterns,
     functional: {
       upperExtremity: ['Difficulty with overhead reaching'],
       lowerExtremity: [],
       spine: []
     },
-    impact: [
-      'Multiple painful movements indicate activity modification needs',
-      'Difficulty with overhead reaching'
-    ]
+    impact: ['Limited shoulder mobility affects daily tasks']
   };
 
-  describe('Brief Format', () => {
-    it('should include key findings', () => {
-      const output = formatBrief(sampleAnalysis);
-      
-      expect(output).toContain('Range of Motion Summary');
-      expect(output).toContain('severely restricted');
-      expect(output).toContain('overhead reaching');
-    });
+  it('formats brief output correctly', () => {
+    const output = formatROM(sampleData, 'brief');
+    expect(output).toContain('Range of Motion Summary');
+    expect(output).toContain('shoulder');
+    expect(output).toContain('restricted');
   });
 
-  describe('Standard Format', () => {
-    it('should include movement patterns', () => {
-      const output = formatStandard(sampleAnalysis);
-      
-      expect(output).toContain('Movement Patterns');
-      expect(output).toContain('asymmetrical');
-      expect(output).toContain('painful');
-    });
-
-    it('should include functional impacts', () => {
-      const output = formatStandard(sampleAnalysis);
-      
-      expect(output).toContain('Functional Impact');
-      expect(output).toContain('overhead reaching');
-    });
+  it('formats standard output correctly', () => {
+    const output = formatROM(sampleData, 'standard');
+    expect(output).toContain('Range of Motion Assessment');
+    expect(output).toContain('Movement Patterns');
+    expect(output).toContain('Functional Impact');
   });
 
-  describe('Detailed Format', () => {
-    it('should include joint measurements', () => {
-      const output = formatDetailed(sampleAnalysis);
-      
-      expect(output).toContain('Joint Measurements');
-      expect(output).toContain('shoulder');
-      expect(output).toContain('flexion');
-      expect(output).toContain('R: 90°');
-    });
+  it('formats detailed output correctly', () => {
+    const output = formatROM(sampleData, 'detailed');
+    expect(output).toContain('Comprehensive Range of Motion Assessment');
+    expect(output).toContain('Joint Measurements');
+    expect(output).toContain('Movement Patterns');
+    expect(output).toContain('Functional Analysis');
+  });
 
-    it('should include patterns and impacts', () => {
-      const output = formatDetailed(sampleAnalysis);
-      
-      expect(output).toContain('Movement Patterns');
-      expect(output).toContain('Functional Analysis');
-      expect(output).toContain('Clinical Impact');
-    });
+  it('handles empty data gracefully', () => {
+    const emptyData: ROMAnalysis = {
+      joints: {},
+      patterns: {
+        bilateral: [],
+        unilateral: [],
+        painful: [],
+        restricted: []
+      },
+      functional: {
+        upperExtremity: [],
+        lowerExtremity: [],
+        spine: []
+      },
+      impact: []
+    };
+
+    const output = formatROM(emptyData);
+    expect(output).not.toContain('undefined');
+    expect(output).not.toContain('null');
   });
 });

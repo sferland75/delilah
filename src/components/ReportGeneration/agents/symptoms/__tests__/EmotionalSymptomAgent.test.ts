@@ -1,51 +1,34 @@
 import { EmotionalSymptomAgent } from '../EmotionalSymptomAgent';
-import { sampleSymptomData } from '../__fixtures__/sampleData';
+import { mockContext, sampleSymptomData } from '../../../testing/mockData';
 
 describe('EmotionalSymptomAgent', () => {
-  const mockContext = {
-    options: { detailLevel: 'standard' }
-  };
-  
-  const agent = new EmotionalSymptomAgent(mockContext as any);
+  const agent = new EmotionalSymptomAgent(mockContext);
 
-  it('should process emotional symptoms correctly', async () => {
-    const result = await agent.processData(sampleSymptomData.symptoms.emotional);
-    
-    expect(result).toHaveLength(1);
-    expect(result[0]).toMatchObject({
-      location: 'Irritability',
-      severity: 'Severe',
-      frequency: 'Rarely'
+  it('processes emotional symptoms correctly', async () => {
+    const result = await agent.processData(sampleSymptomData);
+    expect(result.valid).toBe(true);
+    expect(result.symptoms[0]).toMatchObject({
+      symptom: 'Anxiety',
+      severity: 'Moderate'
     });
   });
 
-  it('should handle impact and management information', async () => {
-    const result = await agent.processData(sampleSymptomData.symptoms.emotional);
+  it('formats emotional symptoms appropriately', async () => {
+    const result = await agent.processData(sampleSymptomData);
     
-    const irritability = result[0];
-    expect(irritability.impact).toContain('intense agitation');
-    expect(irritability.impact).toContain('triggered when driving');
-    expect(irritability.management).toContain('Wife is able to calm him down');
+    const anxiety = result.symptoms[0];
+    expect(anxiety.frequency).toBe('Weekly');
+    expect(anxiety.management).toBe('Counseling');
   });
 
-  it('should analyze emotional patterns', async () => {
-    const result = await agent.processData(sampleSymptomData.symptoms.emotional);
-    const patterns = (agent as any).analyzeEmotionalPatterns(result);
-    
-    expect(patterns).toContainEqual('Significant irritability affecting interpersonal relationships');
+  it('handles severity levels correctly', async () => {
+    const result = await agent.processData(sampleSymptomData);
+    expect(result.symptoms[0].severity).toBe('Moderate');
   });
 
-  it('should format output appropriately', async () => {
-    const result = await agent.processData(sampleSymptomData.symptoms.emotional);
-    const formatted = agent.format(result);
-    
-    // Should include symptom
-    expect(formatted).toContain('Irritability');
-    
-    // Should include severity
-    expect(formatted).toContain('Severe');
-    
-    // Should include frequency
-    expect(formatted).toContain('Rarely');
+  it('generates a complete section', async () => {
+    const section = await agent.generateSection(sampleSymptomData);
+    expect(section.valid).toBe(true);
+    expect(section.content).toContain('Emotional Symptoms');
   });
 });

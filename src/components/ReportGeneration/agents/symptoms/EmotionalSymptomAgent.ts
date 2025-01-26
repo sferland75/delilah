@@ -1,85 +1,52 @@
 import { BaseAgent } from '../BaseAgent';
-import { AgentContext } from '../types';
-import { SymptomData } from './SymptomTypes';
-import { validateSymptomData } from './validation';
+import { AgentContext, AssessmentData, SymptomAgentOutput } from '../../types';
+import _ from 'lodash';
 
 export class EmotionalSymptomAgent extends BaseAgent {
   constructor(context: AgentContext) {
     super(context, 3.3, 'Emotional Symptoms', ['symptoms.emotional']);
   }
 
-  protected initializeValidationRules(): void {
-    this.validationRules.set('emotional', (data) => Array.isArray(data) && data.every(validateSymptomData));
-  }
-
-  protected getSectionKeys(): string[] {
-    return ['symptom', 'severity', 'frequency', 'impact', 'management'];
-  }
-
-  async processData(data: any): Promise<SymptomData[]> {
-    return data.map((symptom: any) => ({
-      location: symptom.symptom,
-      severity: symptom.severity,
-      frequency: symptom.frequency,
-      impact: symptom.impact,
-      management: symptom.management
-    }));
-  }
-
-  protected formatByDetailLevel(data: SymptomData[], level: string): string {
-    switch (level) {
-      case 'brief':
-        return this.formatBrief(data);
-      case 'standard':
-        return this.formatStandard(data);
-      case 'detailed':
-        return this.formatDetailed(data);
-      default:
-        return this.formatStandard(data);
-    }
-  }
-
-  private formatBrief(data: SymptomData[]): string {
-    return data
-      .map(s => `${s.location}: ${s.severity} (${s.frequency})`)
-      .join('\n');
-  }
-
-  private formatStandard(data: SymptomData[]): string {
-    return data
-      .map(s => `
-- ${s.location}:
-  Severity: ${s.severity}
-  Frequency: ${s.frequency}
-  Impact: ${s.impact || 'Not specified'}`
-      ).join('\n');
-  }
-
-  private formatDetailed(data: SymptomData[]): string {
-    return data
-      .map(s => `
-### ${s.location}
-- Severity: ${s.severity}
-- Frequency: ${s.frequency}
-- Impact: ${s.impact || 'Not specified'}
-- Management Approaches: ${s.management || 'Not specified'}`
-      ).join('\n');
-  }
-
-  protected analyzeEmotionalPatterns(data: SymptomData[]): string[] {
-    const patterns = [];
+  async processData(data: AssessmentData): Promise<SymptomAgentOutput> {
+    const symptoms = _.get(data, 'symptoms.emotional', []);
     
-    const irritabilitySeverity = data.find(s => s.location === 'Irritability')?.severity;
-    const anxietySeverity = data.find(s => s.location === 'Anxiety')?.severity;
-    
-    if (irritabilitySeverity === 'Severe') {
-      patterns.push('Significant irritability affecting interpersonal relationships');
-    }
-    
-    if (anxietySeverity === 'Severe' || anxietySeverity === 'Moderate') {
-      patterns.push('Notable anxiety impacting daily activities');
+    return {
+      valid: true,
+      symptoms: symptoms.map(s => ({
+        symptom: s.symptom,
+        severity: s.severity,
+        frequency: s.frequency,
+        impact: s.impact,
+        management: s.management
+      }))
+    };
+  }
+
+  public formatByDetailLevel(data: SymptomAgentOutput, level: "brief" | "standard" | "detailed"): string {
+    if (data.symptoms.length === 0) {
+      return "No emotional symptoms reported";
     }
 
-    return patterns;
+    const sections = ['Emotional Symptoms:'];
+    
+    data.symptoms.forEach(s => {
+      if (level === 'brief') {
+        sections.push(`- ${s.symptom} (${s.severity})`);
+      } else {
+        sections.push(`\n${s.symptom}:`);
+        sections.push(`  Severity: ${s.severity}`);
+        sections.push(`  Frequency: ${s.frequency}`);
+        if (level === 'detailed') {
+          sections.push(`  Impact: ${s.impact}`);
+          sections.push(`  Management: ${s.management}`);
+        }
+      }
+    });
+
+    return sections.join('\n');
+  }
+
+  format(data: SymptomAgentOutput): string {
+    return this.formatByDetailLevel(data, this.context.config?.detailLevel || 'standard');
   }
 }

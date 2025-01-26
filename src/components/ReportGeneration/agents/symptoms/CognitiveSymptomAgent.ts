@@ -1,68 +1,52 @@
 import { BaseAgent } from '../BaseAgent';
-import { AgentContext } from '../types';
-import { SymptomData } from './SymptomTypes';
-import { validateSymptomData } from './validation';
+import { AgentContext, AssessmentData, SymptomAgentOutput } from '../../types';
+import _ from 'lodash';
 
 export class CognitiveSymptomAgent extends BaseAgent {
   constructor(context: AgentContext) {
     super(context, 3.2, 'Cognitive Symptoms', ['symptoms.cognitive']);
   }
 
-  protected initializeValidationRules(): void {
-    this.validationRules.set('cognitive', (data) => Array.isArray(data) && data.every(validateSymptomData));
+  async processData(data: AssessmentData): Promise<SymptomAgentOutput> {
+    const symptoms = _.get(data, 'symptoms.cognitive', []);
+    
+    return {
+      valid: true,
+      symptoms: symptoms.map(s => ({
+        symptom: s.symptom,
+        severity: s.severity,
+        frequency: s.frequency,
+        impact: s.impact,
+        management: s.management
+      }))
+    };
   }
 
-  protected getSectionKeys(): string[] {
-    return ['symptom', 'severity', 'frequency', 'impact', 'management'];
-  }
-
-  async processData(data: any): Promise<SymptomData[]> {
-    return data.map((symptom: any) => ({
-      location: symptom.symptom,
-      severity: symptom.severity,
-      frequency: symptom.frequency,
-      impact: symptom.impact,
-      management: symptom.management
-    }));
-  }
-
-  protected formatByDetailLevel(data: SymptomData[], level: string): string {
-    switch (level) {
-      case 'brief':
-        return this.formatBrief(data);
-      case 'standard':
-        return this.formatStandard(data);
-      case 'detailed':
-        return this.formatDetailed(data);
-      default:
-        return this.formatStandard(data);
+  public formatByDetailLevel(data: SymptomAgentOutput, level: "brief" | "standard" | "detailed"): string {
+    if (data.symptoms.length === 0) {
+      return "No cognitive symptoms reported";
     }
+
+    const sections = ['Cognitive Symptoms:'];
+    
+    data.symptoms.forEach(s => {
+      if (level === 'brief') {
+        sections.push(`- ${s.symptom} (${s.severity})`);
+      } else {
+        sections.push(`\n${s.symptom}:`);
+        sections.push(`  Severity: ${s.severity}`);
+        sections.push(`  Frequency: ${s.frequency}`);
+        if (level === 'detailed') {
+          sections.push(`  Impact: ${s.impact}`);
+          sections.push(`  Management: ${s.management}`);
+        }
+      }
+    });
+
+    return sections.join('\n');
   }
 
-  private formatBrief(data: SymptomData[]): string {
-    return data
-      .map(s => `${s.location}: ${s.severity} (${s.frequency})`)
-      .join('\n');
-  }
-
-  private formatStandard(data: SymptomData[]): string {
-    return data
-      .map(s => `
-- ${s.location}:
-  Severity: ${s.severity}
-  Frequency: ${s.frequency}
-  Impact: ${s.impact || 'Not specified'}`
-      ).join('\n');
-  }
-
-  private formatDetailed(data: SymptomData[]): string {
-    return data
-      .map(s => `
-### ${s.location}
-- Severity: ${s.severity}
-- Frequency: ${s.frequency}
-- Impact: ${s.impact || 'Not specified'}
-- Management Strategies: ${s.management || 'Not specified'}`
-      ).join('\n');
+  format(data: SymptomAgentOutput): string {
+    return this.formatByDetailLevel(data, this.context.config?.detailLevel || 'standard');
   }
 }

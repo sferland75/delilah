@@ -1,126 +1,136 @@
 import { BaseAgent } from '../BaseAgent';
-import { IndependenceLevel } from './ADLTypes';
-import { IADLData, ProcessedIADLData, IADLSection } from './IADLTypes';
-import { formatBrief, formatStandard, formatDetailed, formatIndependenceLevel } from './formatters';
-import { identifyRisks } from './riskPatterns';
-import { ensureActivity, ensureIndependenceLevel, ensureString } from './typeUtils';
-import {
-  extractBarriers,
-  determineOverallIndependence,
-  processCategoryNeeds,
-  determineSupportType,
-  determineFrequency,
-  determineAdaptation,
-  generateRationale
-} from './analysisUtils';
+import { AgentContext, AssessmentData } from '../../types';
+import _ from 'lodash';
+
+interface IADLActivity {
+  level: string;
+  notes?: string;
+  equipment?: string[];
+  frequency?: string;
+  support?: string[];
+}
+
+type IADLActivityKey = 'mealPrep' | 'housekeeping' | 'laundry' | 'shopping' | 
+                      'transportation' | 'medication' | 'finances' | 'communication';
+
+interface IADLOutput {
+  valid: boolean;
+  activities: {
+    [K in IADLActivityKey]?: IADLActivity;
+  };
+  recommendations: string[];
+  errors?: string[];
+}
 
 export class IADLAgent extends BaseAgent {
-  protected initializeValidationRules(): void {
-    this.validationRules.set('household', (value) => {
-      return value && typeof value === 'object';
-    });
-    this.validationRules.set('community', (value) => {
-      return value && typeof value === 'object';
-    });
+  private readonly activityKeys: IADLActivityKey[] = [
+    'mealPrep', 'housekeeping', 'laundry', 'shopping',
+    'transportation', 'medication', 'finances', 'communication'
+  ];
+
+  constructor(context: AgentContext) {
+    super(context, 3.2, 'Instrumental ADL Assessment', ['functionalAssessment.iadl']);
   }
 
-  async processData(data: IADLData): Promise<ProcessedIADLData> {
-    const sections = {
-      household: this.processSection(data.household),
-      community: this.processSection(data.community)
-    };
+  async processData(data: AssessmentData): Promise<IADLOutput> {
+    const iadlData = _.get(data, 'functionalAssessment.iadl', {});
+    const activities: IADLOutput['activities'] = {};
+    const recommendations: string[] = [];
 
-    const overallIndependence = determineOverallIndependence(data);
-    const supportNeeds = this.determineSupportNeeds(data);
-    const recommendations = this.generateRecommendations(data);
-    const safetyConsiderations = this.identifySafetyConsiderations(data);
+    // Process each IADL activity
+    this.activityKeys.forEach(key => {
+      const activityData = iadlData[key];
+      if (activityData) {
+        activities[key] = this.processActivity(activityData);
+        
+        // Generate recommendations based on assistance needs
+        if (activities[key]?.level !== 'Independent') {
+          recommendations.push(this.generateRecommendation(key, activities[key]!));
+        }
+      }
+    });
 
     return {
-      sections,
-      overallIndependence,
-      supportNeeds,
-      recommendations,
-      safetyConsiderations
+      valid: true,
+      activities,
+      recommendations
     };
   }
 
-  protected formatByDetailLevel(data: unknown, detailLevel: 'brief' | 'standard' | 'detailed'): string {
-    const iadlData = data as ProcessedIADLData;
-    switch (detailLevel) {
-      case 'brief':
-        return formatBrief(iadlData, formatIndependenceLevel);
-      case 'detailed':
-        return formatDetailed(iadlData, formatIndependenceLevel);
-      default:
-        return formatStandard(iadlData, formatIndependenceLevel);
+  private processActivity(data: any): IADLActivity {
+    if (typeof data === 'string') {
+      return { level: data };
     }
+
+    return {
+      level: data.level || 'Dependent',
+      notes: data.notes,
+      equipment: data.equipment,
+      frequency: data.frequency,
+      support: data.support
+    };
   }
 
-  protected getSectionKeys(): string[] {
-    return ['household', 'community'];
+  private generateRecommendation(activity: IADLActivityKey, details: IADLActivity): string {
+    const baseRec = `Consider support for ${activity}`;
+    
+    if (details.level === 'Dependent') {
+      return `${baseRec} - requires full assistance`;
+    }
+    
+    if (details.level === 'Modified Independent' && !details.equipment?.length) {
+      return `${baseRec} - may benefit from adaptive equipment`;
+    }
+    
+    return `${baseRec} - currently at ${details.level} level`;
   }
 
-  private processSection(data: any): IADLSection[] {
-    return Object.entries(data).map(([activity, details]: [string, any]) => ({
-      activity,
-      notes: ensureString(details.notes),
-      independence: ensureIndependenceLevel(details.independence),
-      barriersIdentified: extractBarriers(ensureString(details.notes)),
-      adaptationsUsed: details.adaptations || []
-    }));
-  }
+  protected override formatBrief(data: IADLOutput): string {
+    const sections = ['IADL Status'];
 
-  private determineSupportNeeds(data: IADLData): ProcessedIADLData['supportNeeds'] {
-    const needs: ProcessedIADLData['supportNeeds'] = [];
-
-    const processedHousehold = Object.entries(data.household).reduce((acc, [key, value]) => {
-      acc[key] = ensureActivity(value);
-      return acc;
-    }, {} as Record<string, { independence: IndependenceLevel; notes: string }>);
-
-    const processedCommunity = Object.entries(data.community).reduce((acc, [key, value]) => {
-      acc[key] = ensureActivity(value);
-      return acc;
-    }, {} as Record<string, { independence: IndependenceLevel; notes: string }>);
-
-    processCategoryNeeds(processedHousehold, 'Household', needs);
-    processCategoryNeeds(processedCommunity, 'Community', needs);
-
-    return needs;
-  }
-
-  private generateRecommendations(data: IADLData): ProcessedIADLData['recommendations'] {
-    const recommendations: ProcessedIADLData['recommendations'] = [];
-
-    Object.entries({ ...data.household, ...data.community }).forEach(([activity, details]) => {
-      const processedDetails = ensureActivity(details);
-      if (processedDetails.independence === 'not_applicable' || processedDetails.independence === 'independent') {
-        return;
-      }
-
-      recommendations.push({
-        activity,
-        adaptation: determineAdaptation(activity, processedDetails),
-        supportType: determineSupportType(processedDetails.independence),
-        frequency: determineFrequency(processedDetails.independence),
-        rationale: generateRationale(activity, processedDetails)
-      });
-    });
-
-    return recommendations;
-  }
-
-  private identifySafetyConsiderations(data: IADLData): ProcessedIADLData['safetyConsiderations'] {
-    const considerations: ProcessedIADLData['safetyConsiderations'] = [];
-
-    Object.entries({ ...data.household, ...data.community }).forEach(([activity, details]) => {
-      const processedDetails = ensureActivity(details);
-      const risks = identifyRisks(activity, processedDetails);
-      if (risks) {
-        considerations.push(risks);
+    this.activityKeys.forEach(key => {
+      const activity = data.activities[key];
+      if (activity) {
+        sections.push(`${key}: ${activity.level}`);
       }
     });
 
-    return considerations;
+    return sections.join('\n');
+  }
+
+  protected override formatDetailed(data: IADLOutput): string {
+    const sections = ['Instrumental ADL Assessment'];
+
+    // Activities
+    Object.entries(data.activities).forEach(([key, details]) => {
+      if (!details) return;
+
+      sections.push(`\n${key.charAt(0).toUpperCase() + key.slice(1)}:`);
+      sections.push(`  Assistance Level: ${details.level}`);
+      
+      if (details.equipment?.length) {
+        sections.push(`  Equipment Used: ${details.equipment.join(', ')}`);
+      }
+      
+      if (details.support?.length) {
+        sections.push(`  Support System: ${details.support.join(', ')}`);
+      }
+      
+      if (details.frequency) {
+        sections.push(`  Frequency: ${details.frequency}`);
+      }
+      
+      if (details.notes) {
+        sections.push(`  Notes: ${details.notes}`);
+      }
+    });
+
+    // Recommendations
+    if (data.recommendations.length > 0) {
+      sections.push('\nRecommendations:');
+      data.recommendations.forEach(rec => sections.push(`- ${rec}`));
+    }
+
+    return sections.join('\n');
   }
 }

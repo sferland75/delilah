@@ -1,56 +1,117 @@
-import { describe, expect, it } from '@jest/globals';
+import { JointROM, ROMPattern } from '../types';
 import { identifyPatterns, analyzeUpperExtremityFunction, analyzeLowerExtremityFunction } from '../analysis';
-import { sampleJointData } from '../__fixtures__/sampleData';
-import { JointROM } from '../types';
 
 describe('ROM Analysis', () => {
-  const joints = sampleJointData.functionalAssessment.rangeOfMotion as JointROM;
+  describe('identifyPatterns', () => {
+    it('identifies restricted ranges', () => {
+      const joints: JointROM = {
+        shoulder: [{
+          movement: 'flexion',
+          active: {
+            right: 90,
+            left: 85,
+            normal: 180
+          }
+        }]
+      };
 
-  describe('Pattern Identification', () => {
-    it('should identify bilateral patterns', () => {
       const patterns = identifyPatterns(joints);
-      const hasRestricted = patterns.restricted.some(p => p.match(/shoulder.*restricted/));
-      expect(hasRestricted).toBe(true);
+      expect(patterns.bilateral.length).toBeGreaterThan(0);
+      expect(patterns.bilateral[0].description).toContain('restricted');
     });
 
-    it('should identify asymmetrical patterns', () => {
+    it('identifies asymmetrical patterns', () => {
+      const joints: JointROM = {
+        shoulder: [{
+          movement: 'flexion',
+          active: {
+            right: 160,
+            left: 90,
+            normal: 180
+          }
+        }]
+      };
+
       const patterns = identifyPatterns(joints);
-      const hasAsymmetry = patterns.unilateral.some(p => p.match(/shoulder.*asymmetrical/));
-      expect(hasAsymmetry).toBe(true);
+      expect(patterns.unilateral.length).toBeGreaterThan(0);
+      expect(patterns.unilateral[0].difference).toBeDefined();
+      expect(patterns.unilateral[0].side).toBeDefined();
     });
 
-    it('should identify painful movements', () => {
+    it('identifies painful movements', () => {
+      const joints: JointROM = {
+        shoulder: [{
+          movement: 'flexion',
+          active: {
+            right: 160,
+            left: 160,
+            normal: 180
+          },
+          painScale: {
+            right: 6,
+            left: 2
+          }
+        }]
+      };
+
       const patterns = identifyPatterns(joints);
-      const hasPainful = patterns.painful.some(p => p.match(/shoulder.*painful/));
-      expect(hasPainful).toBe(true);
+      expect(patterns.painful.length).toBeGreaterThan(0);
+      expect(patterns.painful[0].intensity).toBeDefined();
+      expect(patterns.painful[0].side).toBeDefined();
     });
   });
 
-  describe('Functional Analysis', () => {
-    it('should analyze upper extremity function', () => {
-      const impacts: string[] = [];
-      analyzeUpperExtremityFunction(joints, {}, impacts);
-      const hasOverheadImpact = impacts.some(i => i.match(/overhead reaching/));
-      expect(hasOverheadImpact).toBe(true);
-    });
+  describe('analyzeUpperExtremityFunction', () => {
+    it('analyzes shoulder limitations', () => {
+      const joints: JointROM = {
+        shoulder: [{
+          movement: 'flexion',
+          active: {
+            right: 90,
+            left: 90,
+            normal: 180
+          }
+        }]
+      };
 
-    it('should analyze lower extremity function', () => {
       const impacts: string[] = [];
+      const emptyPatterns = {
+        bilateral: [],
+        unilateral: [],
+        painful: [],
+        restricted: []
+      };
+
+      analyzeUpperExtremityFunction(joints, emptyPatterns, impacts);
+      expect(impacts.length).toBeGreaterThan(0);
+      expect(impacts[0]).toContain('reaching');
+    });
+  });
+
+  describe('analyzeLowerExtremityFunction', () => {
+    it('analyzes knee limitations', () => {
       const lowerData: JointROM = {
         knee: [{
-          joint: 'knee',
           movement: 'flexion',
           active: {
             right: 80,
-            left: 85,
+            left: 80,
             normal: 140
           }
         }]
       };
-      
-      analyzeLowerExtremityFunction(lowerData, {}, impacts);
-      const hasStairImpact = impacts.some(i => i.match(/knee.*stair/));
-      expect(hasStairImpact).toBe(true);
+
+      const impacts: string[] = [];
+      const emptyPatterns = {
+        bilateral: [],
+        unilateral: [],
+        painful: [],
+        restricted: []
+      };
+
+      analyzeLowerExtremityFunction(lowerData, emptyPatterns, impacts);
+      expect(impacts.length).toBeGreaterThan(0);
+      expect(impacts[0]).toContain('stair');
     });
   });
 });

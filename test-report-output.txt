@@ -1,0 +1,8 @@
+OCCUPATIONAL THERAPY IN-HOME ASSESSMENT
+======================================
+
+Client: Patrick Anderson
+Date of Birth: 1962-01-02
+Address: 3651 Maple Avenue, Prescott ON K0E 1T0
+
+Test report generation successful!

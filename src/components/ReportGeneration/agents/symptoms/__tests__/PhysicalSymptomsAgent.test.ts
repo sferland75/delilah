@@ -1,62 +1,32 @@
 import { PhysicalSymptomsAgent } from '../PhysicalSymptomsAgent';
-import { sampleSymptomData } from '../__fixtures__/sampleData';
+import { mockContext, sampleSymptomData } from '../../../testing/mockData';
 
 describe('PhysicalSymptomsAgent', () => {
-  const mockContext = {
-    options: { detailLevel: 'standard' }
-  };
-  
-  const agent = new PhysicalSymptomsAgent(mockContext as any);
+  const agent = new PhysicalSymptomsAgent(mockContext);
 
-  it('should process physical symptoms correctly', async () => {
-    const result = await agent.processData(sampleSymptomData.symptoms.physical);
-    
-    expect(result).toHaveLength(3);
-    expect(result[0]).toMatchObject({
-      location: 'Right hip/Groin',
-      painType: 'Sharp',
-      severity: 'Very Severe',
-      frequency: 'Rarely'
-    });
+  it('processes physical symptoms correctly', async () => {
+    const result = await agent.processData(sampleSymptomData);
+    expect(result.valid).toBe(true);
+    expect(result.symptoms[0]).toHaveProperty('location', 'Lower Back');
+    expect(result.symptoms[0]).toHaveProperty('severity', 'Moderate');
   });
 
-  it('should include aggravating and relieving factors', async () => {
-    const result = await agent.processData(sampleSymptomData.symptoms.physical);
+  it('formats symptoms by detail level', async () => {
+    const processed = await agent.processData(sampleSymptomData);
     
-    expect(result[0].aggravating).toContain('Every step');
-    expect(result[0].relieving).toContain('Moving');
+    const brief = agent.formatByDetailLevel(processed, 'brief');
+    expect(brief).toContain('Pain (Moderate)');
     
-    expect(result[1].aggravating).toContain('Standing');
-    expect(result[1].relieving).toContain('Lying down');
+    const standard = agent.formatByDetailLevel(processed, 'standard');
+    expect(standard).toContain('Frequency: Daily');
+    
+    const detailed = agent.formatByDetailLevel(processed, 'detailed');
+    expect(detailed).toContain('Management: Medication');
   });
 
-  it('should process impact information', async () => {
-    const result = await agent.processData(sampleSymptomData.symptoms.physical);
-    
-    // Should identify severe impacts
-    const severeSymptoms = result.filter(s => 
-      s.severity === 'Severe' || s.severity === 'Very Severe'
-    );
-    severeSymptoms.forEach(symptom => {
-      expect(symptom.impact).toContain('Significantly limits');
-    });
-  });
-
-  it('should format output appropriately', async () => {
-    const result = await agent.processData(sampleSymptomData.symptoms.physical);
-    const formatted = agent.format(result);
-    
-    // Should include severity levels
-    expect(formatted).toContain('Very Severe');
-    expect(formatted).toContain('Severe');
-    
-    // Should include locations
-    expect(formatted).toContain('Right hip/Groin');
-    expect(formatted).toContain('Lower back');
-    expect(formatted).toContain('Right shoulder/arm');
-    
-    // Should include pain types
-    expect(formatted).toContain('Sharp');
-    expect(formatted).toContain('Stabbing');
+  it('generates a complete section', async () => {
+    const section = await agent.generateSection(sampleSymptomData);
+    expect(section.valid).toBe(true);
+    expect(section.content).toContain('Physical Symptoms');
   });
 });

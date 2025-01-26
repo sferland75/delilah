@@ -1,90 +1,56 @@
 import { BaseAgent } from '../BaseAgent';
-import { AgentContext } from '../types';
-import { SymptomData } from './SymptomTypes';
-import { validateSymptomData } from './validation';
+import { AgentContext, AssessmentData, SymptomAgentOutput } from '../../types';
+import _ from 'lodash';
 
 export class PhysicalSymptomsAgent extends BaseAgent {
   constructor(context: AgentContext) {
     super(context, 3.1, 'Physical Symptoms', ['symptoms.physical']);
   }
 
-  protected initializeValidationRules(): void {
-    this.validationRules.set('physical', (data) => Array.isArray(data) && data.every(validateSymptomData));
-  }
-
-  async processData(data: any): Promise<SymptomData[]> {
-    return data.map((symptom: any) => ({
-      location: symptom.location,
-      painType: symptom.painType,
-      severity: symptom.severity,
-      frequency: symptom.frequency,
-      aggravating: symptom.aggravating,
-      relieving: symptom.relieving,
-      impact: this.processImpact(symptom)
-    }));
-  }
-
-  protected getSectionKeys(): string[] {
-    return ['location', 'painType', 'severity', 'frequency', 'aggravating', 'relieving', 'impact'];
-  }
-
-  private processImpact(symptom: any): string {
-    const impacts = [];
+  async processData(data: AssessmentData): Promise<SymptomAgentOutput> {
+    const symptoms = _.get(data, 'symptoms.physical', []);
     
-    if (symptom.aggravating) {
-      impacts.push(`Aggravated by: ${symptom.aggravating}`);
+    return {
+      valid: true,
+      symptoms: symptoms.map(s => ({
+        symptom: s.symptom,
+        severity: s.severity,
+        frequency: s.frequency,
+        impact: s.impact,
+        management: s.management,
+        location: s.location
+      }))
+    };
+  }
+
+  public formatByDetailLevel(data: SymptomAgentOutput, level: "brief" | "standard" | "detailed"): string {
+    if (data.symptoms.length === 0) {
+      return "No physical symptoms reported";
     }
+
+    const sections = ['Physical Symptoms:'];
     
-    if (symptom.frequency === 'Constantly' || symptom.frequency === 'Most of the time') {
-      impacts.push('Persistent impact on daily activities');
-    }
-    
-    if (symptom.severity === 'Severe' || symptom.severity === 'Very Severe') {
-      impacts.push('Significantly limits functional capacity');
-    }
+    data.symptoms.forEach(s => {
+      if (level === 'brief') {
+        sections.push(`- ${s.symptom} (${s.severity})`);
+      } else {
+        sections.push(`\n${s.symptom}:`);
+        sections.push(`  Severity: ${s.severity}`);
+        sections.push(`  Frequency: ${s.frequency}`);
+        if (level === 'detailed') {
+          sections.push(`  Impact: ${s.impact}`);
+          sections.push(`  Management: ${s.management}`);
+          if (s.location) {
+            sections.push(`  Location: ${s.location}`);
+          }
+        }
+      }
+    });
 
-    return impacts.join('. ') || 'Impact not specified';
+    return sections.join('\n');
   }
 
-  protected formatByDetailLevel(data: SymptomData[], level: string): string {
-    switch (level) {
-      case 'brief':
-        return this.formatBrief(data);
-      case 'standard':
-        return this.formatStandard(data);
-      case 'detailed':
-        return this.formatDetailed(data);
-      default:
-        return this.formatStandard(data);
-    }
-  }
-
-  private formatBrief(data: SymptomData[]): string {
-    return data
-      .map(s => `${s.location}: ${s.severity} (${s.frequency})`)
-      .join('\n');
-  }
-
-  private formatStandard(data: SymptomData[]): string {
-    return data
-      .map(s => `
-- Location: ${s.location}
-  Severity: ${s.severity}
-  Frequency: ${s.frequency}
-  Type: ${s.painType || 'Not specified'}`
-      ).join('\n');
-  }
-
-  private formatDetailed(data: SymptomData[]): string {
-    return data
-      .map(s => `
-### ${s.location}
-- Pain Type: ${s.painType || 'Not specified'}
-- Severity: ${s.severity}
-- Frequency: ${s.frequency}
-- Aggravating Factors: ${s.aggravating || 'Not specified'}
-- Relieving Factors: ${s.relieving || 'Not specified'}
-- Impact: ${s.impact}`
-      ).join('\n');
+  format(data: SymptomAgentOutput): string {
+    return this.formatByDetailLevel(data, this.context.config?.detailLevel || 'standard');
   }
 }

@@ -1,65 +1,77 @@
-import { describe, expect, it } from '@jest/globals';
-import { ROMData, JointROM } from '../types';
+import { ROMData, ROMPattern } from '../types';
 
-describe('ROM Data Types', () => {
-  it('should validate a basic ROM measurement', () => {
-    const measurement: ROMData = {
-      joint: 'shoulder',
-      movement: 'flexion',
-      active: {
-        right: 180,
-        left: 175,
-        normal: 180
-      }
-    };
-
-    expect(measurement.joint).toBe('shoulder');
-    expect(measurement.active.normal).toBe(180);
-  });
-
-  it('should allow optional fields', () => {
-    const measurement: ROMData = {
-      joint: 'knee',
-      movement: 'flexion',
-      active: {
-        right: 130
-      }
-    };
-
-    expect(measurement.passive).toBeUndefined();
-    expect(measurement.painScale).toBeUndefined();
-  });
-
-  it('should validate a complete joint ROM set', () => {
-    const shoulderROM: JointROM = {
-      shoulder: [
-        {
-          joint: 'shoulder',
-          movement: 'flexion',
-          active: {
-            right: 180,
-            left: 175,
-            normal: 180
-          }
+describe('ROM Types', () => {
+  describe('ROMData', () => {
+    it('validates ROMData structure', () => {
+      const measurement: ROMData = {
+        movement: 'flexion',
+        active: {
+          right: 160,
+          left: 120,
+          normal: 180
         },
-        {
-          joint: 'shoulder',
-          movement: 'abduction',
-          active: {
-            right: 170,
-            left: 165,
-            normal: 180
-          }
+        painScale: {
+          right: 2,
+          left: 6
         }
-      ]
-    };
+      };
 
-    // Add null check before accessing array
-    if (shoulderROM.shoulder) {
-      expect(shoulderROM.shoulder).toHaveLength(2);
-      expect(shoulderROM.shoulder[0].movement).toBe('flexion');
-    } else {
-      fail('Shoulder measurements should be defined');
-    }
+      expect(measurement.movement).toBe('flexion');
+      expect(measurement.active.right).toBe(160);
+      expect(measurement.active.left).toBe(120);
+      expect(measurement.active.normal).toBe(180);
+    });
+
+    it('handles optional fields', () => {
+      const measurement: ROMData = {
+        movement: 'flexion',
+        active: {
+          right: 130,
+          left: 130
+        }
+      };
+
+      expect(measurement.movement).toBe('flexion');
+      expect(measurement.painScale).toBeUndefined();
+      expect(measurement.endFeel).toBeUndefined();
+    });
+  });
+
+  describe('ROMPattern', () => {
+    it('validates unilateral pattern structure', () => {
+      const pattern: ROMPattern = {
+        joint: 'shoulder',
+        movement: 'flexion',
+        side: 'right',
+        difference: 40
+      };
+
+      expect(pattern.joint).toBe('shoulder');
+      expect(pattern.side).toBe('right');
+      expect(pattern.difference).toBe(40);
+    });
+
+    it('validates painful pattern structure', () => {
+      const pattern: ROMPattern = {
+        joint: 'shoulder',
+        movement: 'flexion',
+        side: 'left',
+        intensity: 6
+      };
+
+      expect(pattern.joint).toBe('shoulder');
+      expect(pattern.intensity).toBe(6);
+    });
+
+    it('validates restricted pattern structure', () => {
+      const pattern: ROMPattern = {
+        joint: 'shoulder',
+        movement: 'flexion',
+        description: 'severely restricted'
+      };
+
+      expect(pattern.joint).toBe('shoulder');
+      expect(pattern.description).toBe('severely restricted');
+    });
   });
 });
