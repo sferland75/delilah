@@ -28,3 +28,17 @@ coverage/
 
 # Backup files
 *.bak
+
+# Client Data Files
+*.pdf
+IHAs/
+filter-rules.txt
+
+# Local Development
+scripts/local/
+*.local.*
+
+# Temporary Files
+*.tmp
+*.temp
+/backup_*
