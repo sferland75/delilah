@@ -60,6 +60,7 @@ export abstract class TransfersAgentRecommendations extends TransfersAgentPatter
     
     requiredEquipment.forEach((item: string) => {
       if (!currentEquipment.has(item)) {
+        // Maintain original format with underscores
         recommendations.push(`Obtain ${item} for safe transfers`);
       }
     });

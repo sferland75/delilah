@@ -2,7 +2,7 @@ import type { AssessmentData } from '../types';
 import type { TransferPattern, TransferLocation, TransfersAgentOutput } from '../types/transfers';
 import { TransfersAgentBase } from './TransfersAgentBase';
 
-export class TransfersAgentAnalysis extends TransfersAgentBase {
+export abstract class TransfersAgentAnalysis extends TransfersAgentBase {
   public async analyze(data: AssessmentData): Promise<TransfersAgentOutput> {
     const transferData = this.extractTransferData(data);
     const patterns = this.analyzeTransferPatterns(transferData);
@@ -35,33 +35,9 @@ export class TransfersAgentAnalysis extends TransfersAgentBase {
     };
   }
 
-  protected analyzeTransferPatterns(_data: any): TransferPattern[] {
-    // Base implementation returns empty array
-    // Override in derived classes
-    return [];
-  }
-
-  protected analyzeLocationSpecificTransfers(_data: any): TransferLocation[] {
-    // Base implementation returns empty array
-    // Override in derived classes
-    return [];
-  }
-
-  protected assessRiskFactors(_data: any): string[] {
-    // Base implementation returns empty array
-    // Override in derived classes
-    return [];
-  }
-
-  protected generateRecommendations(_data: any, _patterns: TransferPattern[], _risks: string[]): string[] {
-    // Base implementation returns empty array
-    // Override in derived classes
-    return [];
-  }
-
-  protected identifyRequiredEquipment(_data: any, _patterns: TransferPattern[]): string[] {
-    // Base implementation returns empty array
-    // Override in derived classes
-    return [];
-  }
+  protected abstract analyzeTransferPatterns(data: any): TransferPattern[];
+  protected abstract analyzeLocationSpecificTransfers(data: any): TransferLocation[];
+  protected abstract assessRiskFactors(data: any): string[];
+  protected abstract generateRecommendations(data: any, patterns: TransferPattern[], risks: string[]): string[];
+  protected abstract identifyRequiredEquipment(data: any, patterns: TransferPattern[]): string[];
 }
