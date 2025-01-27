@@ -4,49 +4,33 @@ import _ from 'lodash';
 
 interface IADLActivity {
   level: string;
-  notes?: string;
   equipment?: string[];
-  frequency?: string;
-  support?: string[];
+  notes?: string;
 }
-
-type IADLActivityKey = 'mealPrep' | 'housekeeping' | 'laundry' | 'shopping' | 
-                      'transportation' | 'medication' | 'finances' | 'communication';
 
 interface IADLOutput {
   valid: boolean;
-  activities: {
-    [K in IADLActivityKey]?: IADLActivity;
-  };
+  activities: Record<string, IADLActivity>;
   recommendations: string[];
   errors?: string[];
 }
 
 export class IADLAgent extends BaseAgent {
-  private readonly activityKeys: IADLActivityKey[] = [
-    'mealPrep', 'housekeeping', 'laundry', 'shopping',
-    'transportation', 'medication', 'finances', 'communication'
-  ];
-
   constructor(context: AgentContext) {
-    super(context, 3.2, 'Instrumental ADL Assessment', ['functionalAssessment.iadl']);
+    super(context, 3.2, 'IADL Assessment', ['functionalAssessment.iadl']);
   }
 
   async processData(data: AssessmentData): Promise<IADLOutput> {
     const iadlData = _.get(data, 'functionalAssessment.iadl', {});
-    const activities: IADLOutput['activities'] = {};
+    const activities: Record<string, IADLActivity> = {};
     const recommendations: string[] = [];
 
-    // Process each IADL activity
-    this.activityKeys.forEach(key => {
-      const activityData = iadlData[key];
-      if (activityData) {
-        activities[key] = this.processActivity(activityData);
-        
-        // Generate recommendations based on assistance needs
-        if (activities[key]?.level !== 'Independent') {
-          recommendations.push(this.generateRecommendation(key, activities[key]!));
-        }
+    Object.entries(iadlData).forEach(([key, value]) => {
+      const activity = this.processActivity(value);
+      activities[key] = activity;
+      
+      if (activity.level !== 'Independent') {
+        recommendations.push(this.generateRecommendation(key, activity));
       }
     });
 
@@ -64,68 +48,76 @@ export class IADLAgent extends BaseAgent {
 
     return {
       level: data.level || 'Dependent',
-      notes: data.notes,
       equipment: data.equipment,
-      frequency: data.frequency,
-      support: data.support
+      notes: data.notes
     };
   }
 
-  private generateRecommendation(activity: IADLActivityKey, details: IADLActivity): string {
-    const baseRec = `Consider support for ${activity}`;
-    
-    if (details.level === 'Dependent') {
-      return `${baseRec} - requires full assistance`;
-    }
-    
-    if (details.level === 'Modified Independent' && !details.equipment?.length) {
-      return `${baseRec} - may benefit from adaptive equipment`;
-    }
-    
-    return `${baseRec} - currently at ${details.level} level`;
+  private generateRecommendation(activity: string, details: IADLActivity): string {
+    return `Consider support for ${this.formatActivityName(activity)} - currently at ${details.level} level`;
   }
 
-  protected override formatBrief(data: IADLOutput): string {
-    const sections = ['IADL Status'];
+  private formatActivityName(key: string): string {
+    return key
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, str => str.toUpperCase())
+      .trim();
+  }
 
-    this.activityKeys.forEach(key => {
-      const activity = data.activities[key];
-      if (activity) {
-        sections.push(`${key}: ${activity.level}`);
-      }
+  protected formatBrief(data: IADLOutput): string {
+    const sections = ['IADL Status'];
+    
+    Object.entries(data.activities).forEach(([key, activity]) => {
+      sections.push(`${this.formatActivityName(key)}: ${activity.level}`);
     });
 
     return sections.join('\n');
   }
 
-  protected override formatDetailed(data: IADLOutput): string {
+  protected formatStandard(data: IADLOutput): string {
     const sections = ['Instrumental ADL Assessment'];
+    const byLevel: Record<string, string[]> = {};
 
-    // Activities
-    Object.entries(data.activities).forEach(([key, details]) => {
-      if (!details) return;
-
-      sections.push(`\n${key.charAt(0).toUpperCase() + key.slice(1)}:`);
-      sections.push(`  Assistance Level: ${details.level}`);
-      
-      if (details.equipment?.length) {
-        sections.push(`  Equipment Used: ${details.equipment.join(', ')}`);
-      }
-      
-      if (details.support?.length) {
-        sections.push(`  Support System: ${details.support.join(', ')}`);
-      }
-      
-      if (details.frequency) {
-        sections.push(`  Frequency: ${details.frequency}`);
-      }
-      
-      if (details.notes) {
-        sections.push(`  Notes: ${details.notes}`);
+    Object.entries(data.activities).forEach(([key, activity]) => {
+      byLevel[activity.level] = byLevel[activity.level] || [];
+      if (activity.equipment?.length) {
+        byLevel[activity.level].push(`${this.formatActivityName(key)} (uses ${activity.equipment.join(', ')})`);
+      } else {
+        byLevel[activity.level].push(this.formatActivityName(key));
       }
     });
 
-    // Recommendations
+    Object.entries(byLevel).forEach(([level, activities]) => {
+      if (activities.length > 0) {
+        sections.push(`\n${level}:`);
+        activities.forEach(activity => sections.push(`- ${activity}`));
+      }
+    });
+
+    if (data.recommendations.length > 0) {
+      sections.push('\nRecommendations:');
+      data.recommendations.forEach(rec => sections.push(`- ${rec}`));
+    }
+
+    return sections.join('\n');
+  }
+
+  protected formatDetailed(data: IADLOutput): string {
+    const sections = ['IADL Assessment'];
+
+    Object.entries(data.activities).forEach(([key, activity]) => {
+      sections.push(`\n${this.formatActivityName(key)}:`);
+      sections.push(`  Assistance Level: ${activity.level}`);
+      
+      if (activity.equipment?.length) {
+        sections.push(`  Equipment Used: ${activity.equipment.join(', ')}`);
+      }
+      
+      if (activity.notes) {
+        sections.push(`  Notes: ${activity.notes}`);
+      }
+    });
+
     if (data.recommendations.length > 0) {
       sections.push('\nRecommendations:');
       data.recommendations.forEach(rec => sections.push(`- ${rec}`));

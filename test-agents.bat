@@ -1,0 +1,6 @@
+@echo off
+echo Testing DemographicsAgent...
+npm test src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts
+echo.
+echo Testing MobilityAgent...
+npm test src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts

@@ -1,7 +1,6 @@
 import { RangeOfMotionAgent } from '../RangeOfMotionAgent';
 import { createMockContext } from '../../../testing/mockContext';
 import { AssessmentData } from '../../../types';
-import { ROMPattern } from '../types';
 
 describe('RangeOfMotionAgent', () => {
   let agent: RangeOfMotionAgent;
@@ -48,22 +47,26 @@ describe('RangeOfMotionAgent', () => {
       const result = await agent.processData(sampleData);
       expect(result.valid).toBe(true);
       expect(result.patterns?.unilateral).toBeDefined();
-      
-      const hasAsymmetry = result.patterns?.unilateral?.some((p: ROMPattern) => 
-        p.joint === 'shoulder' && p.movement === 'flexion' && p.difference === 40
+      expect(result.patterns?.unilateral).toContainEqual(
+        expect.objectContaining({
+          joint: 'shoulder',
+          movement: 'flexion',
+          difference: 40
+        })
       );
-      expect(hasAsymmetry).toBe(true);
     });
 
     it('identifies painful movements', async () => {
       const result = await agent.processData(sampleData);
       expect(result.valid).toBe(true);
       expect(result.patterns?.painful).toBeDefined();
-      
-      const hasPain = result.patterns?.painful?.some((p: ROMPattern) =>
-        p.joint === 'shoulder' && p.movement === 'flexion' && p.intensity === 6
+      expect(result.patterns?.painful).toContainEqual(
+        expect.objectContaining({
+          joint: 'shoulder',
+          movement: 'flexion',
+          intensity: 6
+        })
       );
-      expect(hasPain).toBe(true);
     });
   });
 
@@ -79,12 +82,13 @@ describe('RangeOfMotionAgent', () => {
 
       const standardFormat = agent.getFormattedContent(result, 'standard');
       expect(standardFormat).toContain('Range of Motion Assessment');
+      expect(standardFormat).toContain('Movement Patterns');
       expect(standardFormat).toContain('shoulder');
       expect(standardFormat).toContain('flexion');
 
       const detailedFormat = agent.getFormattedContent(result, 'detailed');
       expect(detailedFormat).toContain('Joint Measurements');
-      expect(detailedFormat).toContain('Movement Pattern Analysis');
+      expect(detailedFormat).toContain('Movement Patterns');
       expect(detailedFormat).toContain('Functional Analysis');
     });
   });

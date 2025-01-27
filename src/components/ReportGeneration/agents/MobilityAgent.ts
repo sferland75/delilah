@@ -1,33 +1,7 @@
 import { BaseAgent } from './BaseAgent';
 import { AgentContext, AssessmentData } from '../types';
+import { MobilityInput, MobilityOutput, EquipmentData } from './types/mobility';
 import _ from 'lodash';
-
-interface MobilityInput {
-  walkingDistance?: number;
-  assistiveDevices?: string[];
-  restrictions?: string[];
-  terrain?: string[];
-  notes?: string;
-}
-
-export interface MobilityOutput {
-  valid: boolean;
-  mobility: {
-    walkingDistance: number;
-    assistiveDevices: string[];
-    restrictions: string[];
-    terrain: string[];
-    notes?: string;
-  };
-  balance: {
-    score?: number;
-    riskLevel: 'low' | 'moderate' | 'high';
-    concerns: string[];
-  };
-  safety: string[];
-  recommendations: string[];
-  errors?: string[];
-}
 
 export class MobilityAgent extends BaseAgent {
   constructor(context: AgentContext) {
@@ -37,7 +11,7 @@ export class MobilityAgent extends BaseAgent {
   async processData(data: AssessmentData): Promise<MobilityOutput> {
     const mobility = _.get(data, 'functionalAssessment.mobility', {}) as MobilityInput;
     const bergBalance = _.get(data, 'functionalAssessment.bergBalance.totalScore');
-    const currentEquipment = _.get(data, 'equipment.current', []);
+    const equipment = _.get(data, 'equipment', { current: [] }) as EquipmentData;
 
     const safety: string[] = [];
     const recommendations: string[] = [];
@@ -68,12 +42,14 @@ export class MobilityAgent extends BaseAgent {
     }
 
     // Check needed devices
-    const neededDevices = processedMobility.assistiveDevices.filter(
-      (device: string) => !currentEquipment.includes(device)
-    );
+    if (processedMobility.assistiveDevices && equipment.current) {
+      const neededDevices = processedMobility.assistiveDevices.filter(
+        device => !equipment.current.includes(device)
+      );
 
-    if (neededDevices.length > 0) {
-      recommendations.push(`Obtain needed mobility devices: ${neededDevices.join(', ')}`);
+      if (neededDevices.length > 0) {
+        recommendations.push(`Obtain needed mobility devices: ${neededDevices.join(', ')}`);
+      }
     }
 
     if (processedMobility.restrictions.length > 0) {
@@ -100,7 +76,7 @@ export class MobilityAgent extends BaseAgent {
     return 'high';
   }
 
-  protected override formatBrief(data: MobilityOutput): string {
+  protected formatBrief(data: MobilityOutput): string {
     const sections = ['Mobility Status'];
 
     sections.push(`\nWalking Distance: ${data.mobility.walkingDistance} feet`);
@@ -116,7 +92,31 @@ export class MobilityAgent extends BaseAgent {
     return sections.join('\n');
   }
 
-  protected override formatDetailed(data: MobilityOutput): string {
+  protected formatStandard(data: MobilityOutput): string {
+    const sections = ['Mobility Assessment'];
+
+    // Core mobility info
+    sections.push(`\nWalking Distance: ${data.mobility.walkingDistance} feet`);
+    
+    if (data.mobility.assistiveDevices.length > 0) {
+      sections.push(`Assistive Devices: ${data.mobility.assistiveDevices.join(', ')}`);
+    }
+
+    // Balance info
+    if (data.balance.score !== undefined) {
+      sections.push(`\nBerg Balance Score: ${data.balance.score}`);
+      sections.push(`Fall Risk Level: ${data.balance.riskLevel}`);
+    }
+
+    // Key safety concerns
+    if (data.safety.length > 0) {
+      sections.push(`\nSafety Concerns: ${data.safety.join(', ')}`);
+    }
+
+    return sections.join('\n');
+  }
+
+  protected formatDetailed(data: MobilityOutput): string {
     const sections = ['Mobility Assessment'];
 
     // Mobility details

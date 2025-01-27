@@ -1,29 +1,60 @@
 import { CognitiveSymptomAgent } from '../CognitiveSymptomAgent';
-import { mockContext, sampleSymptomData } from '../../../testing/mockData';
+import { createMockContext } from '../../../testing/mockContext';
+import { AssessmentData } from '../../../types';
 
 describe('CognitiveSymptomAgent', () => {
-  const agent = new CognitiveSymptomAgent(mockContext);
+  let agent: CognitiveSymptomAgent;
 
-  it('processes cognitive symptoms correctly', async () => {
-    const result = await agent.processData(sampleSymptomData);
+  const mockSymptomData: AssessmentData = {
+    id: 'test-123',
+    date: '2025-01-26',
+    symptoms: {
+      cognitive: [{
+        symptom: 'Memory loss',
+        severity: 'Mild',
+        frequency: 'Daily',
+        impact: 'Forgets appointments',
+        management: 'Calendar reminders'
+      }]
+    }
+  };
+
+  beforeEach(() => {
+    agent = new CognitiveSymptomAgent(createMockContext());
+  });
+
+  it('processes symptom data correctly', async () => {
+    const result = await agent.processData(mockSymptomData);
     expect(result.valid).toBe(true);
-    expect(result.symptoms[0]).toMatchObject({
-      symptom: 'Memory issues',
-      severity: 'Mild'
+    expect(result.symptoms[0].symptom).toBe('Memory loss');
+    expect(result.symptoms[0].severity).toBe('Mild');
+  });
+
+  it('formats output at different detail levels', async () => {
+    const processed = await agent.processData(mockSymptomData);
+
+    const brief = agent.getFormattedContent(processed, 'brief');
+    expect(brief).toContain('Memory loss');
+    expect(brief).toContain('Mild');
+
+    const standard = agent.getFormattedContent(processed, 'standard');
+    expect(standard).toContain('Management: Calendar reminders');
+    expect(standard).toContain('Impact: Forgets appointments');
+
+    const detailed = agent.getFormattedContent(processed, 'detailed');
+    expect(detailed).toContain('Frequency: Daily');
+    expect(detailed).toContain('Severity: Mild');
+  });
+
+  it('handles empty data gracefully', async () => {
+    const processed = await agent.processData({
+      id: 'test-123',
+      date: '2025-01-26',
+      symptoms: { cognitive: [] }
     });
-  });
-
-  it('formats symptoms appropriately', async () => {
-    const result = await agent.processData(sampleSymptomData);
     
-    const memory = result.symptoms.find(s => s.symptom === 'Memory issues');
-    expect(memory).toBeDefined();
-    expect(memory?.management).toBe('Calendar reminders');
-  });
-
-  it('generates a complete section', async () => {
-    const section = await agent.generateSection(sampleSymptomData);
-    expect(section.valid).toBe(true);
-    expect(section.content).toContain('Cognitive Symptoms');
+    const formatted = agent.getFormattedContent(processed, 'standard');
+    expect(formatted).toContain('No cognitive symptoms reported');
+    expect(formatted).not.toContain('undefined');
   });
 });

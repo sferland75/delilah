@@ -1,13 +1,13 @@
 import { BaseAgent } from '../BaseAgent';
-import { AgentContext, AssessmentData, ProcessedData } from '../../types';
+import { AgentContext, AssessmentData } from '../../types';
 import _ from 'lodash';
 
 interface SymptomBase {
   symptom: string;
   severity: string;
   frequency: string;
-  impact: string;
-  management: string;
+  impact?: string;
+  management?: string;
 }
 
 interface PhysicalSymptom extends SymptomBase {
@@ -16,8 +16,13 @@ interface PhysicalSymptom extends SymptomBase {
   triggers?: string[];
 }
 
-interface CognitiveSymptom extends SymptomBase {}
-interface EmotionalSymptom extends SymptomBase {}
+interface CognitiveSymptom extends SymptomBase {
+  notes?: string;
+}
+
+interface EmotionalSymptom extends SymptomBase {
+  triggers?: string[];
+}
 
 interface IntegratedSymptoms {
   physical: PhysicalSymptom[];
@@ -25,120 +30,208 @@ interface IntegratedSymptoms {
   emotional: EmotionalSymptom[];
 }
 
-interface SymptomProcessedData extends ProcessedData {
+export interface SymptomIntegrationOutput {
+  valid: boolean;
   symptoms: IntegratedSymptoms;
+  patterns: {
+    symptoms: { [key: string]: string[] };
+    triggers: { [key: string]: string[] };
+    impacts: { [key: string]: string[] };
+  };
+  summary: string[];
+  errors?: string[];
 }
 
 export class SymptomIntegrationAgent extends BaseAgent {
   constructor(context: AgentContext) {
-    super(context, 3.4, 'Symptom Integration', ['symptoms']);
+    super(context, 3.0, 'Symptom Integration', ['symptoms']);
+  }
+
+  async processData(data: AssessmentData): Promise<SymptomIntegrationOutput> {
+    const symptomsData = _.get(data, 'symptoms', { physical: [], cognitive: [], emotional: [] });
+    
+    const processedSymptoms: IntegratedSymptoms = {
+      physical: this.ensureArray<PhysicalSymptom>(symptomsData.physical || []),
+      cognitive: this.ensureArray<CognitiveSymptom>(symptomsData.cognitive || []),
+      emotional: this.ensureArray<EmotionalSymptom>(symptomsData.emotional || [])
+    };
+
+    const patterns = this.analyzePatterns(processedSymptoms);
+    const summary = this.generateSummary(processedSymptoms);
+
+    return {
+      valid: true,
+      symptoms: processedSymptoms,
+      patterns,
+      summary
+    };
   }
 
   private ensureArray<T>(value: T[] | undefined | null): T[] {
     return Array.isArray(value) ? value : [];
   }
 
-  async processData(data: AssessmentData): Promise<SymptomProcessedData> {
-    const symptomsData = _.get(data, 'symptoms', {});
-    
-    const processedSymptoms: IntegratedSymptoms = {
-      physical: this.ensureArray<PhysicalSymptom>(_.get(symptomsData, 'physical')),
-      cognitive: this.ensureArray<CognitiveSymptom>(_.get(symptomsData, 'cognitive')),
-      emotional: this.ensureArray<EmotionalSymptom>(_.get(symptomsData, 'emotional'))
+  private analyzePatterns(symptoms: IntegratedSymptoms) {
+    const patterns = {
+      symptoms: {} as { [key: string]: string[] },
+      triggers: {} as { [key: string]: string[] },
+      impacts: {} as { [key: string]: string[] }
     };
-    
-    return {
-      valid: true,
-      symptoms: processedSymptoms
-    };
+
+    // Group by impact
+    this.allSymptoms(symptoms).forEach(symptom => {
+      if (symptom.impact) {
+        const key = symptom.impact.toLowerCase();
+        patterns.impacts[key] = patterns.impacts[key] || [];
+        patterns.impacts[key].push(symptom.symptom);
+      }
+    });
+
+    // Group by triggers
+    this.allSymptomsWithTriggers(symptoms).forEach(symptom => {
+      if (symptom.triggers) {
+        symptom.triggers.forEach(trigger => {
+          const key = trigger.toLowerCase();
+          patterns.triggers[key] = patterns.triggers[key] || [];
+          patterns.triggers[key].push(symptom.symptom);
+        });
+      }
+    });
+
+    return patterns;
   }
 
-  format(data: SymptomProcessedData): string {
-    const { symptoms } = data;
-    const sections: string[] = [];
-
-    if (symptoms.physical.length > 0) {
-      sections.push('Physical Symptoms:', ...symptoms.physical.map(s => 
-        `  - ${s.symptom} (${s.severity}): ${s.frequency}, ${s.management}` +
-        (s.location ? ` - ${s.location}` : '')
-      ));
-    }
-
-    if (symptoms.cognitive.length > 0) {
-      sections.push('\nCognitive Symptoms:', ...symptoms.cognitive.map(s =>
-        `  - ${s.symptom} (${s.severity}): ${s.frequency}, ${s.management}`
-      ));
-    }
-
-    if (symptoms.emotional.length > 0) {
-      sections.push('\nEmotional Symptoms:', ...symptoms.emotional.map(s =>
-        `  - ${s.symptom} (${s.severity}): ${s.frequency}, ${s.management}`
-      ));
-    }
-
-    return sections.length > 0 ? sections.join('\n') : 'No symptoms reported';
+  private allSymptoms(symptoms: IntegratedSymptoms): SymptomBase[] {
+    return [
+      ...symptoms.physical,
+      ...symptoms.cognitive,
+      ...symptoms.emotional
+    ];
   }
 
-  protected override formatBrief(data: SymptomProcessedData): string {
-    const { symptoms } = data;
-    const sections: string[] = ['Symptom Summary:'];
+  private allSymptomsWithTriggers(symptoms: IntegratedSymptoms): (PhysicalSymptom | EmotionalSymptom)[] {
+    return [
+      ...symptoms.physical,
+      ...symptoms.emotional
+    ];
+  }
 
-    const countByType = {
+  private generateSummary(symptoms: IntegratedSymptoms): string[] {
+    const summary = [];
+
+    const counts = {
       physical: symptoms.physical.length,
       cognitive: symptoms.cognitive.length,
       emotional: symptoms.emotional.length
     };
 
-    if (countByType.physical > 0) {
-      sections.push(`  - Physical: ${countByType.physical} reported`);
+    const total = counts.physical + counts.cognitive + counts.emotional;
+    if (total === 0) {
+      return ['No symptoms reported'];
     }
-    if (countByType.cognitive > 0) {
-      sections.push(`  - Cognitive: ${countByType.cognitive} reported`);
+
+    summary.push(`Total symptoms reported: ${total}`);
+    if (counts.physical > 0) summary.push(`- ${counts.physical} physical symptoms`);
+    if (counts.cognitive > 0) summary.push(`- ${counts.cognitive} cognitive symptoms`);
+    if (counts.emotional > 0) summary.push(`- ${counts.emotional} emotional symptoms`);
+
+    return summary;
+  }
+
+  protected formatBrief(data: SymptomIntegrationOutput): string {
+    return data.summary.join('\n');
+  }
+
+  protected formatStandard(data: SymptomIntegrationOutput): string {
+    const sections = ['Symptom Assessment'];
+
+    if (data.symptoms.physical.length > 0) {
+      sections.push('\nPhysical Symptoms:');
+      data.symptoms.physical.forEach(s => {
+        sections.push(`- ${s.symptom} (${s.severity})`);
+        if (s.location) sections.push(`  Location: ${s.location}`);
+        sections.push(`  Management: ${s.management}`);
+      });
     }
-    if (countByType.emotional > 0) {
-      sections.push(`  - Emotional: ${countByType.emotional} reported`);
+
+    if (data.symptoms.cognitive.length > 0) {
+      sections.push('\nCognitive Symptoms:');
+      data.symptoms.cognitive.forEach(s => {
+        sections.push(`- ${s.symptom} (${s.severity})`);
+        sections.push(`  Management: ${s.management}`);
+      });
+    }
+
+    if (data.symptoms.emotional.length > 0) {
+      sections.push('\nEmotional Symptoms:');
+      data.symptoms.emotional.forEach(s => {
+        sections.push(`- ${s.symptom} (${s.severity})`);
+        sections.push(`  Management: ${s.management}`);
+      });
     }
 
     return sections.join('\n');
   }
 
-  protected override formatDetailed(data: SymptomProcessedData): string {
-    const { symptoms } = data;
-    const sections: string[] = ['Detailed Symptom Assessment:'];
+  protected formatDetailed(data: SymptomIntegrationOutput): string {
+    const sections = ['Comprehensive Symptom Assessment'];
 
-    if (symptoms.physical.length > 0) {
+    // Physical Symptoms
+    if (data.symptoms.physical.length > 0) {
       sections.push('\nPhysical Symptoms:');
-      symptoms.physical.forEach(s => {
-        sections.push(`  - ${s.symptom}`);
-        sections.push(`    Severity: ${s.severity}`);
-        sections.push(`    Frequency: ${s.frequency}`);
-        sections.push(`    Impact: ${s.impact}`);
-        sections.push(`    Management: ${s.management}`);
-        if (s.location) sections.push(`    Location: ${s.location}`);
-        if (s.description) sections.push(`    Description: ${s.description}`);
-        if (s.triggers?.length) sections.push(`    Triggers: ${s.triggers.join(', ')}`);
+      data.symptoms.physical.forEach(s => {
+        sections.push(`\n${s.symptom}:`);
+        if (s.location) sections.push(`  Location: ${s.location}`);
+        if (s.description) sections.push(`  Description: ${s.description}`);
+        sections.push(`  Severity: ${s.severity}`);
+        sections.push(`  Frequency: ${s.frequency}`);
+        if (s.impact) sections.push(`  Impact: ${s.impact}`);
+        if (s.management) sections.push(`  Management: ${s.management}`);
+        if (s.triggers?.length) sections.push(`  Triggers: ${s.triggers.join(', ')}`);
       });
     }
 
-    if (symptoms.cognitive.length > 0) {
+    // Cognitive Symptoms
+    if (data.symptoms.cognitive.length > 0) {
       sections.push('\nCognitive Symptoms:');
-      symptoms.cognitive.forEach(s => {
-        sections.push(`  - ${s.symptom}`);
-        sections.push(`    Severity: ${s.severity}`);
-        sections.push(`    Frequency: ${s.frequency}`);
-        sections.push(`    Impact: ${s.impact}`);
-        sections.push(`    Management: ${s.management}`);
+      data.symptoms.cognitive.forEach(s => {
+        sections.push(`\n${s.symptom}:`);
+        sections.push(`  Severity: ${s.severity}`);
+        sections.push(`  Frequency: ${s.frequency}`);
+        if (s.impact) sections.push(`  Impact: ${s.impact}`);
+        if (s.management) sections.push(`  Management: ${s.management}`);
       });
     }
 
-    if (symptoms.emotional.length > 0) {
+    // Emotional Symptoms
+    if (data.symptoms.emotional.length > 0) {
       sections.push('\nEmotional Symptoms:');
-      symptoms.emotional.forEach(s => {
-        sections.push(`  - ${s.symptom}`);
-        sections.push(`    Severity: ${s.severity}`);
-        sections.push(`    Frequency: ${s.frequency}`);
-        sections.push(`    Impact: ${s.impact}`);
-        sections.push(`    Management: ${s.management}`);
+      data.symptoms.emotional.forEach(s => {
+        sections.push(`\n${s.symptom}:`);
+        sections.push(`  Severity: ${s.severity}`);
+        sections.push(`  Frequency: ${s.frequency}`);
+        if (s.impact) sections.push(`  Impact: ${s.impact}`);
+        if (s.management) sections.push(`  Management: ${s.management}`);
+        if (s.triggers?.length) sections.push(`  Triggers: ${s.triggers.join(', ')}`);
+      });
+    }
+
+    // Analysis section
+    sections.push('\nAnalysis:');
+    sections.push('Symptom Distribution:');
+    const severityGroups = _.groupBy(this.allSymptoms(data.symptoms), 'severity');
+    Object.entries(severityGroups).forEach(([severity, symptoms]) => {
+      sections.push(`- ${severity}: ${symptoms.length} symptom(s)`);
+    });
+
+    // Pattern Analysis
+    const significantImpacts = Object.entries(data.patterns.impacts)
+      .filter(([_, symptoms]) => symptoms.length > 1);
+    
+    if (significantImpacts.length > 0) {
+      sections.push('\nCommon Impacts:');
+      significantImpacts.forEach(([impact, symptoms]) => {
+        sections.push(`- ${impact} affects: ${symptoms.join(', ')}`);
       });
     }
 

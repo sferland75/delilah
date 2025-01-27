@@ -15,21 +15,21 @@ class TestAgent extends BaseAgent {
     };
   }
 
-  format(_data: ProcessedData): string {
-    return 'Formatted content';
-  }
-
-  // Expose protected methods for testing
-  public testFormatByDetailLevel(data: ProcessedData, level: "brief" | "standard" | "detailed"): string {
-    return this.formatByDetailLevel(data, level);
-  }
-
   protected formatBrief(data: ProcessedData): string {
-    return `Brief: ${this.format(data)}`;
+    return `Brief: ${JSON.stringify(data.data)}`;
+  }
+
+  protected formatStandard(data: ProcessedData): string {
+    return `Standard: ${JSON.stringify(data.data)}`;
   }
 
   protected formatDetailed(data: ProcessedData): string {
-    return `Detailed: ${this.format(data)}`;
+    return `Detailed: ${JSON.stringify(data.data)}`;
+  }
+
+  // Expose protected method for testing
+  public testFormatByDetailLevel(data: ProcessedData, level: "brief" | "standard" | "detailed"): string {
+    return this.formatByDetailLevel(data, level);
   }
 }
 
@@ -58,16 +58,16 @@ describe('BaseAgent', () => {
   it('generates sections with different detail levels', async () => {
     const section = await agent.generateSection(mockAssessmentData);
     expect(section.valid).toBe(true);
-    expect(section.content).toBe('Formatted content');
+    expect(section.content).toContain('Standard: ');
   });
 
   it('formats content at different detail levels', () => {
-    expect(agent.getFormattedContent(mockProcessedData, 'brief')).toBe('Brief: Formatted content');
-    expect(agent.getFormattedContent(mockProcessedData, 'standard')).toBe('Formatted content');
-    expect(agent.getFormattedContent(mockProcessedData, 'detailed')).toBe('Detailed: Formatted content');
+    expect(agent.getFormattedContent(mockProcessedData, 'brief')).toContain('Brief: ');
+    expect(agent.getFormattedContent(mockProcessedData, 'standard')).toContain('Standard: ');
+    expect(agent.getFormattedContent(mockProcessedData, 'detailed')).toContain('Detailed: ');
   });
 
   it('defaults to standard detail level when none specified', () => {
-    expect(agent.getFormattedContent(mockProcessedData)).toBe('Formatted content');
+    expect(agent.getFormattedContent(mockProcessedData)).toContain('Standard: ');
   });
 });

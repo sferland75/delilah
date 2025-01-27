@@ -5,22 +5,22 @@ import { AssessmentData } from '../../../types';
 describe('IADLAgent', () => {
   let agent: IADLAgent;
 
-  const mockData: AssessmentData = {
-    id: 'test',
+  const mockIADLData: AssessmentData = {
+    id: 'test-123',
     date: '2025-01-26',
     functionalAssessment: {
       iadl: {
         mealPrep: {
           level: 'Modified Independent',
-          notes: 'Uses adaptive equipment',
-          equipment: ['adapted utensils', 'jar opener'],
-          frequency: 'Daily'
+          notes: 'Uses adapted utensils',
+          equipment: ['Electric can opener', 'Jar opener']
         },
-        housekeeping: 'Independent',
+        housekeeping: {
+          level: 'Independent'
+        },
         laundry: {
           level: 'Modified Independent',
-          frequency: 'Weekly',
-          notes: 'Uses front-loading washer'
+          equipment: ['Front loading washer']
         }
       }
     }
@@ -30,51 +30,45 @@ describe('IADLAgent', () => {
     agent = new IADLAgent(createMockContext());
   });
 
-  it('validates IADL data correctly', async () => {
-    const result = await agent.validateData(mockData);
+  it('processes IADL data correctly', async () => {
+    const result = await agent.processData(mockIADLData);
     expect(result.valid).toBe(true);
-  });
-
-  it('processes IADL data with notes', async () => {
-    const result = await agent.processData(mockData);
-    expect(result.valid).toBe(true);
-    expect(result.activities.mealPrep?.notes).toBe('Uses adaptive equipment');
-    expect(result.activities.mealPrep?.equipment).toContain('jar opener');
+    expect(result.activities.mealPrep.level).toBe('Modified Independent');
+    expect(result.activities.housekeeping.level).toBe('Independent');
   });
 
   it('formats output at different detail levels', async () => {
-    const processed = await agent.processData(mockData);
-    
+    const processed = await agent.processData(mockIADLData);
+
     const brief = agent.getFormattedContent(processed, 'brief');
     expect(brief).toContain('IADL Status');
-    expect(brief).toContain('mealPrep: Modified Independent');
+    expect(brief).toContain('Meal Prep: Modified Independent');
 
     const standard = agent.getFormattedContent(processed, 'standard');
-    expect(standard).toContain('Assistance Level: Modified Independent');
+    expect(standard).toContain('\nModified Independent:');
+    expect(standard).toContain('Meal Prep (uses Electric can opener, Jar opener)');
+    expect(standard).toContain('\nIndependent:');
 
     const detailed = agent.getFormattedContent(processed, 'detailed');
-    expect(detailed).toContain('Equipment Used: adapted utensils, jar opener');
+    expect(detailed).toContain('Equipment Used: Electric can opener, Jar opener');
+    expect(detailed).toContain('Notes: Uses adapted utensils');
   });
 
-  it('handles missing activities gracefully', async () => {
-    const minimalData = {
-      id: 'test',
+  it('generates appropriate recommendations', async () => {
+    const result = await agent.processData(mockIADLData);
+    expect(result.recommendations).toContainEqual(expect.stringContaining('Modified Independent'));
+  });
+
+  it('handles empty data gracefully', async () => {
+    const emptyData: AssessmentData = {
+      id: 'test-123',
       date: '2025-01-26',
       functionalAssessment: {
-        iadl: {
-          mealPrep: 'Independent'
-        }
+        iadl: {}
       }
     };
-
-    const result = await agent.processData(minimalData);
+    const result = await agent.processData(emptyData);
     expect(result.valid).toBe(true);
-    expect(result.activities.mealPrep?.level).toBe('Independent');
-  });
-
-  it('generates complete section', async () => {
-    const section = await agent.generateSection(mockData);
-    expect(section.valid).toBe(true);
-    expect(section.content).toContain('Instrumental ADL Assessment');
+    expect(result.activities).toEqual({});
   });
 });

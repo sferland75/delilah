@@ -1,70 +1,27 @@
-export type IndependenceLevel = 
-  | 'independent'
-  | 'modified_independent'
-  | 'supervision'
-  | 'minimal_assistance'
-  | 'moderate_assistance'
-  | 'maximal_assistance'
-  | 'total_assistance'
-  | 'not_applicable';
+export const INDEPENDENCE_LEVELS = {
+  INDEPENDENT: 'independent',
+  MODIFIED_INDEPENDENT: 'modified_independent',
+  SUPERVISION: 'supervision',
+  MINIMAL_ASSISTANCE: 'minimal_assistance',
+  MODERATE_ASSISTANCE: 'moderate_assistance',
+  MAXIMAL_ASSISTANCE: 'maximal_assistance',
+  TOTAL_ASSISTANCE: 'total_assistance',
+  NOT_APPLICABLE: 'not_applicable'
+} as const;
 
-export interface Activity {
+export type IndependenceLevel = typeof INDEPENDENCE_LEVELS[keyof typeof INDEPENDENCE_LEVELS];
+
+export interface ADLActivity {
+  assistanceLevel: IndependenceLevel;
+  equipment?: string[];
   notes?: string;
-  independence?: IndependenceLevel;
 }
 
-export interface ADLSection {
-  activity: string;
-  notes: string;
-  independence: IndependenceLevel;
-}
-
-export interface ADLSectionData {
-  [key: string]: Activity;
-}
-
-export interface BasicADLData {
-  bathing: {
-    shower: Activity;
-    grooming: Activity;
-    oral_care: Activity;
-    toileting: Activity;
-  };
-  dressing: {
-    upper_body: Activity;
-    lower_body: Activity;
-    footwear: Activity;
-  };
-  feeding: {
-    eating: Activity;
-    setup: Activity;
-    drinking: Activity;
-  };
-  transfers: {
-    bed_transfer: Activity;
-    toilet_transfer: Activity;
-    shower_transfer: Activity;
-    position_changes: Activity;
-  };
-}
-
-export interface ProcessedADLData {
-  sections: {
-    bathing: ADLSection[];
-    dressing: ADLSection[];
-    feeding: ADLSection[];
-    transfers: ADLSection[];
-  };
-  overallIndependence: IndependenceLevel;
-  supportNeeds: {
-    category: string;
-    level: IndependenceLevel;
-    rationale: string;
-  }[];
-  recommendedAssistance: {
-    activity: string;
-    type: string;
-    frequency: string;
-    rationale: string;
-  }[];
+export interface ADLData {
+  feeding: ADLActivity;
+  bathing: ADLActivity;
+  dressing: ADLActivity;
+  toileting: ADLActivity;
+  transfers: ADLActivity;
+  ambulation: ADLActivity;
 }

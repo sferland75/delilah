@@ -5,9 +5,18 @@ export interface AgentContext {
     warn: (msg: string) => void;
     info: (msg: string) => void;
   };
-  config?: {
+  config: {
     detailLevel: "brief" | "standard" | "detailed";
   };
+}
+
+export interface DocumentationRecord {
+  title: string;
+  date: string;
+  type: string;
+  provider?: string;
+  summary?: string;
+  relevantFindings?: string[];  // Changed from findings to relevantFindings
 }
 
 export interface AssessmentData {
@@ -16,18 +25,9 @@ export interface AssessmentData {
   demographics?: Record<string, any>;
   functionalAssessment?: Record<string, any>;
   documentation?: {
-    medicalDocumentation: Array<{
-      title: string;
-      date: string;
-      type: string;
-      summary?: string;
-    }>;
-    legalDocumentation: Array<{
-      title: string;
-      date: string;
-      type: string;
-      summary?: string;
-    }>;
+    medicalDocumentation: DocumentationRecord[];
+    legalDocumentation: DocumentationRecord[];
+    otherDocumentation?: DocumentationRecord[];
   };
   symptoms?: {
     physical?: Array<{
@@ -53,6 +53,7 @@ export interface AssessmentData {
       frequency: string;
       impact: string;
       management: string;
+      triggers?: string[];
     }>;
   };
   equipment?: {

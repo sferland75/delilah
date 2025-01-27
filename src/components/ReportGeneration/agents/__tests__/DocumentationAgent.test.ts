@@ -6,7 +6,7 @@ describe('DocumentationAgent', () => {
   let agent: DocumentationAgent;
 
   const mockData: AssessmentData = {
-    id: 'test',
+    id: 'test-123',
     date: '2025-01-26',
     documentation: {
       medicalDocumentation: [
@@ -16,8 +16,7 @@ describe('DocumentationAgent', () => {
           type: 'Medical Report',
           provider: 'Dr. Smith',
           summary: 'Annual physical exam',
-          findings: ['Normal vital signs', 'Stable condition'],
-          recommendations: ['Continue current medications']
+          relevantFindings: ['Normal vital signs', 'Stable condition']
         }
       ],
       legalDocumentation: [
@@ -26,7 +25,8 @@ describe('DocumentationAgent', () => {
           date: '2024-12-01',
           type: 'Power of Attorney',
           provider: 'Law Office LLC',
-          summary: 'Healthcare POA document'
+          summary: 'Healthcare POA document',
+          relevantFindings: []
         }
       ]
     }
@@ -54,7 +54,7 @@ describe('DocumentationAgent', () => {
 
     it('generates recommendations when needed', async () => {
       const oldData: AssessmentData = {
-        id: 'test',
+        id: 'test-123',
         date: '2025-01-26',
         documentation: {
           medicalDocumentation: [
@@ -63,7 +63,8 @@ describe('DocumentationAgent', () => {
               date: '2024-06-01',
               type: 'Medical Report',
               provider: 'Dr. Smith',
-              recommendations: ['Update records annually']
+              summary: 'Old medical report',
+              relevantFindings: []
             }
           ],
           legalDocumentation: []
@@ -91,14 +92,15 @@ describe('DocumentationAgent', () => {
 
     it('handles minimal data gracefully', async () => {
       const minimalData: AssessmentData = {
-        id: 'test',
+        id: 'test-123',
         date: '2025-01-26',
         documentation: {
           medicalDocumentation: [
             {
               title: 'Basic Report',
               date: '2025-01-15',
-              type: 'Medical Report'
+              type: 'Medical Report',
+              relevantFindings: []
             }
           ],
           legalDocumentation: []

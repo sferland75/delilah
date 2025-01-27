@@ -2,7 +2,21 @@ import { BaseAgent } from '../BaseAgent';
 import { AgentContext, AssessmentData } from '../../types';
 import _ from 'lodash';
 
-interface NarrativeTransferOutput {
+interface TransferDetails {
+  assistanceLevel: string;
+  equipment?: string[];
+  safety_concerns?: string[];
+  modifications?: string[];
+}
+
+interface TransferData {
+  bedMobility: string;
+  sitToStand: string;
+  toilet?: TransferDetails;
+  shower?: TransferDetails;
+}
+
+interface TransferOutput {
   valid: boolean;
   narrative: string;
   bullets: string[];
@@ -15,10 +29,10 @@ export class NarrativeTransfersAgent extends BaseAgent {
     super(context, 2.1, 'Transfer Narrative', ['functionalAssessment.transfers']);
   }
 
-  async processData(data: AssessmentData): Promise<NarrativeTransferOutput> {
-    const transfers = _.get(data, 'functionalAssessment.transfers', {});
-    const currentEquipment = _.get(data, 'equipment.current', []);
+  async processData(data: AssessmentData): Promise<TransferOutput> {
+    const transfers = _.get(data, 'functionalAssessment.transfers', {}) as TransferData;
     const bergBalance = _.get(data, 'functionalAssessment.bergBalance.totalScore');
+    const currentEquipment = _.get(data, 'equipment.current', []);
 
     const narrative = this.generateNarrative(transfers, bergBalance);
     const bullets = this.generateBulletPoints(transfers, currentEquipment);
@@ -32,20 +46,17 @@ export class NarrativeTransfersAgent extends BaseAgent {
     };
   }
 
-  private generateNarrative(transfers: Record<string, any>, bergBalance?: number): string {
+  private generateNarrative(transfers: TransferData, bergBalance?: number): string {
     const sections: string[] = [];
 
-    // Overall transfer ability
     const overallLevel = this.determineOverallLevel(transfers);
     sections.push(`Patient demonstrates ${overallLevel} transfer abilities.`);
 
-    // Add specific details about different transfers
     const specifics = this.getTransferSpecifics(transfers);
     if (specifics) {
       sections.push(specifics);
     }
 
-    // Add balance information if available
     if (bergBalance !== undefined) {
       sections.push(this.getBalanceNarrative(bergBalance));
     }
@@ -53,12 +64,12 @@ export class NarrativeTransfersAgent extends BaseAgent {
     return sections.join(' ');
   }
 
-  private determineOverallLevel(transfers: Record<string, any>): string {
+  private determineOverallLevel(transfers: TransferData): string {
     const levels = [
       transfers.bedMobility,
       transfers.sitToStand,
-      ...(transfers.toilet ? [transfers.toilet.assistanceLevel] : []),
-      ...(transfers.shower ? [transfers.shower.assistanceLevel] : [])
+      transfers.toilet?.assistanceLevel,
+      transfers.shower?.assistanceLevel
     ].filter(Boolean);
 
     if (levels.every(l => l === 'Independent')) {
@@ -76,11 +87,11 @@ export class NarrativeTransfersAgent extends BaseAgent {
     return 'varied levels of independence with';
   }
 
-  private getTransferSpecifics(transfers: Record<string, any>): string {
+  private getTransferSpecifics(transfers: TransferData): string {
     const details: string[] = [];
 
     if (transfers.bedMobility) {
-      details.push(`Bed mobility is ${transfers.bedMobility.toLowerCase()}`);
+      details.push(`bed mobility is ${transfers.bedMobility.toLowerCase()}`);
     }
 
     if (transfers.sitToStand) {
@@ -94,7 +105,6 @@ export class NarrativeTransfersAgent extends BaseAgent {
       if (transfers.toilet.equipment?.length) {
         toiletDetails.push(`using ${transfers.toilet.equipment.join(' and ')}`);
       }
-      
       details.push(toiletDetails.join(' '));
     }
 
@@ -105,7 +115,6 @@ export class NarrativeTransfersAgent extends BaseAgent {
       if (transfers.shower.equipment?.length) {
         showerDetails.push(`using ${transfers.shower.equipment.join(' and ')}`);
       }
-      
       details.push(showerDetails.join(' '));
     }
 
@@ -122,7 +131,7 @@ export class NarrativeTransfersAgent extends BaseAgent {
     }
   }
 
-  private generateBulletPoints(transfers: Record<string, any>, currentEquipment: string[]): string[] {
+  private generateBulletPoints(transfers: TransferData, currentEquipment: string[]): string[] {
     const bullets: string[] = [];
 
     // Equipment utilization
@@ -160,7 +169,7 @@ export class NarrativeTransfersAgent extends BaseAgent {
   }
 
   private generateRecommendations(
-    transfers: Record<string, any>,
+    transfers: TransferData,
     bergBalance?: number,
     currentEquipment: string[] = []
   ): string[] {
@@ -196,29 +205,37 @@ export class NarrativeTransfersAgent extends BaseAgent {
     return recommendations;
   }
 
-  format(data: NarrativeTransferOutput): string {
-    return this.formatByDetailLevel(data, this.context.config?.detailLevel || 'standard');
-  }
-
-  protected override formatBrief(data: NarrativeTransferOutput): string {
+  protected formatBrief(data: TransferOutput): string {
     return data.narrative;
   }
 
-  protected override formatDetailed(data: NarrativeTransferOutput): string {
+  protected formatStandard(data: TransferOutput): string {
     const sections = [data.narrative];
 
     if (data.bullets.length > 0) {
-      sections.push('\nKey Points:');
-      data.bullets.forEach(bullet => {
-        sections.push(`• ${bullet}`);
-      });
+      sections.push('\nCurrent Equipment:');
+      data.bullets.forEach(bullet => sections.push(`- ${bullet}`));
     }
 
     if (data.recommendations.length > 0) {
       sections.push('\nRecommendations:');
-      data.recommendations.forEach(rec => {
-        sections.push(`• ${rec}`);
-      });
+      data.recommendations.forEach(rec => sections.push(`- ${rec}`));
+    }
+
+    return sections.join('\n');
+  }
+
+  protected formatDetailed(data: TransferOutput): string {
+    const sections = [data.narrative];
+
+    if (data.bullets.length > 0) {
+      sections.push('\nCurrent Equipment:');
+      data.bullets.forEach(bullet => sections.push(`- ${bullet}`));
+    }
+
+    if (data.recommendations.length > 0) {
+      sections.push('\nRecommendations:');
+      data.recommendations.forEach(rec => sections.push(`- ${rec}`));
     }
 
     return sections.join('\n');

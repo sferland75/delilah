@@ -1,25 +1,7 @@
 import { BaseAgent } from './BaseAgent';
 import { AgentContext, AssessmentData } from '../types';
+import { Document, DocumentationData, DocumentationOutput } from './types/documentation';
 import _ from 'lodash';
-
-interface Document {
-  title: string;
-  date: string;
-  type: string;
-  summary?: string;
-  provider?: string;
-  relevantFindings?: string[];
-  recommendations?: string[];
-}
-
-export interface DocumentationOutput {
-  valid: boolean;
-  medicalDocumentation: Document[];
-  legalDocumentation: Document[];
-  otherDocumentation?: Document[];
-  recommendations: string[];
-  errors?: string[];
-}
 
 export class DocumentationAgent extends BaseAgent {
   constructor(context: AgentContext) {
@@ -27,14 +9,12 @@ export class DocumentationAgent extends BaseAgent {
   }
 
   async processData(data: AssessmentData): Promise<DocumentationOutput> {
-    const docs = _.get(data, 'documentation', {
-      medicalDocumentation: [],
-      legalDocumentation: []
-    });
+    const docs = _.get(data, 'documentation', {}) as DocumentationData;
     
     // Process documents by category
     const medicalDocs = this.processDocuments(docs.medicalDocumentation || []);
     const legalDocs = this.processDocuments(docs.legalDocumentation || []);
+    const otherDocs = this.processDocuments(docs.otherDocumentation || []);
 
     // Generate recommendations
     const recommendations = this.generateRecommendations(medicalDocs, legalDocs);
@@ -43,29 +23,24 @@ export class DocumentationAgent extends BaseAgent {
       valid: true,
       medicalDocumentation: medicalDocs,
       legalDocumentation: legalDocs,
+      otherDocumentation: otherDocs,
       recommendations
     };
   }
 
-  private processDocuments(docs: any[]): Document[] {
+  private processDocuments(docs: Document[]): Document[] {
     return docs.map(doc => ({
       title: doc.title || 'Untitled Document',
       date: doc.date || 'Unknown date',
       type: doc.type || 'Unknown type',
       summary: doc.summary,
       provider: doc.provider,
-      relevantFindings: doc.findings || [],
-      recommendations: doc.recommendations || []
+      relevantFindings: doc.relevantFindings || []
     }));
   }
 
   private generateRecommendations(medicalDocs: Document[], legalDocs: Document[]): string[] {
     const recommendations = new Set<string>();
-
-    // Collect recommendations from documents
-    [...medicalDocs, ...legalDocs].forEach(doc => {
-      doc.recommendations?.forEach(rec => recommendations.add(rec));
-    });
 
     // Add recommendations based on missing documentation
     if (medicalDocs.length === 0) {
@@ -94,17 +69,17 @@ export class DocumentationAgent extends BaseAgent {
     return docDate < sixMonthsAgo;
   }
 
-  protected override formatBrief(data: DocumentationOutput): string {
+  protected formatBrief(data: DocumentationOutput): string {
     const sections = ['Documentation Summary'];
 
-    // Medical documentation
+    // Medical documentation count
     if (data.medicalDocumentation.length > 0) {
-      sections.push(`\nMedical Documentation: ${data.medicalDocumentation.length} documents`);
+      sections.push(`\nMedical Documentation: ${data.medicalDocumentation.length} record(s)`);
     }
 
-    // Legal documentation
+    // Legal documentation count
     if (data.legalDocumentation.length > 0) {
-      sections.push(`\nLegal Documentation: ${data.legalDocumentation.length} documents`);
+      sections.push(`Legal Documentation: ${data.legalDocumentation.length} record(s)`);
     }
 
     // Urgent recommendations
@@ -121,7 +96,50 @@ export class DocumentationAgent extends BaseAgent {
     return sections.join('\n');
   }
 
-  protected override formatDetailed(data: DocumentationOutput): string {
+  protected formatStandard(data: DocumentationOutput): string {
+    const sections = ['Documentation Review'];
+
+    // Medical documentation
+    if (data.medicalDocumentation.length > 0) {
+      sections.push('\nMedical Documentation:');
+      data.medicalDocumentation.forEach(doc => {
+        sections.push(`- ${doc.date}: ${doc.title} (${doc.type})`);
+        if (doc.provider) sections.push(`  Provider: ${doc.provider}`);
+        if (doc.relevantFindings?.length) {
+          sections.push('  Key Findings:');
+          doc.relevantFindings.forEach(finding => sections.push(`    - ${finding}`));
+        }
+      });
+    }
+
+    // Legal documentation
+    if (data.legalDocumentation.length > 0) {
+      sections.push('\nLegal Documentation:');
+      data.legalDocumentation.forEach(doc => {
+        sections.push(`- ${doc.date}: ${doc.title} (${doc.type})`);
+        if (doc.provider) sections.push(`  Provider: ${doc.provider}`);
+        if (doc.summary) sections.push(`  Summary: ${doc.summary}`);
+      });
+    }
+
+    // Other documentation
+    if (data.otherDocumentation?.length) {
+      sections.push('\nOther Documentation:');
+      data.otherDocumentation.forEach(doc => {
+        sections.push(`- ${doc.date}: ${doc.title} (${doc.type})`);
+      });
+    }
+
+    // Recommendations
+    if (data.recommendations.length > 0) {
+      sections.push('\nRecommendations:');
+      data.recommendations.forEach(rec => sections.push(`- ${rec}`));
+    }
+
+    return sections.join('\n');
+  }
+
+  protected formatDetailed(data: DocumentationOutput): string {
     const sections = ['Documentation Review'];
 
     // Medical documentation
@@ -129,11 +147,12 @@ export class DocumentationAgent extends BaseAgent {
       sections.push('\nMedical Documentation:');
       data.medicalDocumentation.forEach(doc => {
         sections.push(`\n${doc.type} - ${doc.date}`);
+        sections.push(`Title: ${doc.title}`);
         if (doc.provider) sections.push(`Provider: ${doc.provider}`);
         if (doc.summary) sections.push(`Summary: ${doc.summary}`);
         
         if (doc.relevantFindings?.length) {
-          sections.push('Findings:');
+          sections.push('Key Findings:');
           doc.relevantFindings.forEach(finding => sections.push(`- ${finding}`));
         }
       });
@@ -144,8 +163,13 @@ export class DocumentationAgent extends BaseAgent {
       sections.push('\nLegal Documentation:');
       data.legalDocumentation.forEach(doc => {
         sections.push(`\n${doc.type} - ${doc.date}`);
+        sections.push(`Title: ${doc.title}`);
         if (doc.provider) sections.push(`Provider: ${doc.provider}`);
         if (doc.summary) sections.push(`Summary: ${doc.summary}`);
+        if (doc.relevantFindings?.length) {
+          sections.push('Key Findings:');
+          doc.relevantFindings.forEach(finding => sections.push(`- ${finding}`));
+        }
       });
     }
 
@@ -154,6 +178,7 @@ export class DocumentationAgent extends BaseAgent {
       sections.push('\nOther Documentation:');
       data.otherDocumentation.forEach(doc => {
         sections.push(`\n${doc.type} - ${doc.date}`);
+        sections.push(`Title: ${doc.title}`);
         if (doc.summary) sections.push(`Summary: ${doc.summary}`);
       });
     }

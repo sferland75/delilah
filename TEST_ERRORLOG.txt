@@ -1,887 +1,253 @@
-d:\delilah>npm test
+D:\delilah>npm test
 
 > delilah-agentic@1.0.0 test
 > jest
 
- PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/import-test.ts (11.161 s)
- PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/normalROM.test.ts (11.44 s)
- PASS  src/components/ReportGeneration/agents/__tests__/utils.test.ts (11.721 s)
- PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/types.test.ts (12.225 s)
- FAIL  src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:15:21 - error TS2339: Property 'walkingDistance' does not exist on type 'MobilityOutput'.
-
-    15       expect(result.walkingDistance).toBe(100);
-                           ~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:16:21 - error TS2339: Property 'assistiveDevices' does not exist on type 'MobilityOutput'.
-
-    16       expect(result.assistiveDevices).toContain('Cane');
-                           ~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:17:21 - error TS2339: Property 'restrictions' does not exist on type 'MobilityOutput'.
-
-    17       expect(result.restrictions).toContain('No running');
-                           ~~~~~~~~~~~~
-
- FAIL  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/formatting.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/formatting.test.ts:2:10 - error TS2459: Module '"../formatting"' declares 'formatBrief' locally, but it is not exported.
-
-    2 import { formatBrief, formatStandard, formatDetailed } from '../formatting';
-               ~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/RangeOfMotion/formatting.ts:14:10
-        14 function formatBrief(data: ROMAnalysis): string {
-                    ~~~~~~~~~~~
-        'formatBrief' is declared here.
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/formatting.test.ts:2:23 - error TS2459: Module '"../formatting"' declares 'formatStandard' locally, but it is not exported.
-
-    2 import { formatBrief, formatStandard, formatDetailed } from '../formatting';
-                            ~~~~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/RangeOfMotion/formatting.ts:26:10
-        26 function formatStandard(data: ROMAnalysis): string {
-                    ~~~~~~~~~~~~~~
-        'formatStandard' is declared here.
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/formatting.test.ts:2:39 - error TS2459: Module '"../formatting"' declares 'formatDetailed' locally, but it is not exported.
-
-    2 import { formatBrief, formatStandard, formatDetailed } from '../formatting';
-                                            ~~~~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/RangeOfMotion/formatting.ts:61:10
-        61 function formatDetailed(data: ROMAnalysis): string {
-                    ~~~~~~~~~~~~~~
-        'formatDetailed' is declared here.
-
- FAIL  src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:9:17 - error TS2554: Expected 1 arguments, but got 0.
-
-    9         agent = new TransfersAgent();
-                      ~~~~~~~~~~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/narrative/TransfersAgent.ts:15:15
-        15   constructor(context: AgentContext) {
-                         ~~~~~~~~~~~~~~~~~~~~~
-        An argument for 'context' was not provided.
-    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:15:37 - error TS2339: Property 'generateNarrative' does not exist on type 'TransfersAgent'.
-
-    15             const narrative = agent.generateNarrative(mockData);
-                                           ~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:32:37 - error TS2339: Property 'generateNarrative' does not exist on type 'TransfersAgent'.
-
-    32             const narrative = agent.generateNarrative(mockData);
-                                           ~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:41:37 - error TS2339: Property 'generateNarrative' does not exist on type 'TransfersAgent'.
-
-    41             const narrative = agent.generateNarrative(mockData);
-                                           ~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:48:37 - error TS2339: Property 'generateNarrative' does not exist on type 'TransfersAgent'.
-
-    48             const narrative = agent.generateNarrative(mockData);
-                                           ~~~~~~~~~~~~~~~~~
-
- FAIL  src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts (17.832 s)
-  ● BasicADLAgent › processes ADL data correctly
-
-    expect(received).toBeDefined()
-
-    Received: undefined
-
-      25 |     const result = await agent.processData(sampleADLData);
-      26 |     expect(result.valid).toBe(true);
-    > 27 |     expect(result.activities.feeding).toBeDefined();
-         |                                       ^
-      28 |     expect(result.activities.bathing).toBeDefined();
-      29 |     expect(result.activities.dressing).toBeDefined();
-      30 |     expect(result.activities.toileting).toBeDefined();
-
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:27:39)
-
-  ● BasicADLAgent › formats output appropriately by detail level
-
-    expect(received).toContain(expected) // indexOf
-
-    Expected substring: "feeding: Independent"
-    Received string:    "Basic ADL Status:"
-
-      35 |
-      36 |     const brief = agent.formatByDetailLevel(processed, 'brief');
-    > 37 |     expect(brief).toContain('feeding: Independent');
-         |                   ^
-      38 |
-      39 |     const detailed = agent.formatByDetailLevel(processed, 'detailed');
-      40 |     expect(detailed).toContain('Assistance Level: Modified Independent');
-
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:37:19)
-
-  ● BasicADLAgent › generates complete section
-
-    expect(received).toBe(expected) // Object.is equality
-
-    Expected: true
-    Received: false
-
-      43 |   it('generates complete section', async () => {
-      44 |     const section = await agent.generateSection(sampleADLData);
-    > 45 |     expect(section.valid).toBe(true);
-         |                           ^
-      46 |     expect(section.content).toContain('Basic ADL Assessment');
-      47 |   });
-      48 | });
-
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:45:27)
-
- FAIL  src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:2:10 - error TS6133: 'mockContext' is declared but its value is never read.
-
-    2 import { mockContext, baseTestData } from '../../testing/mockData';
-               ~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:10:15 - error TS2304: Cannot find name 'createMockContext'.
-
-    10     context = createMockContext();
-                     ~~~~~~~~~~~~~~~~~
-
+ PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/import-test.ts (11.339 s)
+ PASS  src/components/ReportGeneration/agents/__tests__/utils.test.ts (11.928 s)
+ PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/normalROM.test.ts (12.216 s)
+ PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts (12.444 s)
+ PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/types.test.ts
+ PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/formatting.test.ts
+ PASS  src/components/ReportGeneration/agents/symptoms/__tests__/PhysicalSymptomsAgent.test.ts (17.67 s)
+ PASS  src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts (17.871 s)
+ PASS  src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts (17.97 s)
+ PASS  src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts (6.27 s)
+ PASS  src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts (18.5 s)
+ PASS  src/components/ReportGeneration/agents/symptoms/__tests__/SymptomIntegrationAgent.test.ts (6.044 s)
+ PASS  src/components/ReportGeneration/agents/symptoms/__tests__/CognitiveSymptomAgent.test.ts (18.665 s)
+ PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts (6.402 s)
+ PASS  src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts (18.766 s)
  FAIL  src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts
   ● Test suite failed to run
 
-    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:33:19 - error TS2339: Property 'documentation' does not exist on type 'DocumentationOutput'.
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:20:11 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
 
-    33     expect(result.documentation.medicalDocumentation).toHaveLength(1);
-                         ~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:34:19 - error TS2339: Property 'documentation' does not exist on type 'DocumentationOutput'.
+    20           relevantFindings: ['Normal vital signs', 'Stable condition'],
+                 ~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:32:11 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
 
-    34     expect(result.documentation.legalDocumentation).toHaveLength(1);
-                         ~~~~~~~~~~~~~
+    32           relevantFindings: [],
+                 ~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:72:15 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
 
- PASS  src/components/ReportGeneration/agents/symptoms/__tests__/CognitiveSymptomAgent.test.ts (18.032 s)
- FAIL  src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts
-  ● Test suite failed to run
+    72               relevantFindings: [],
+                     ~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:110:15 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
 
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:4:1 - error TS6133: 'formatROM' is declared but its value is never read.
+    110               relevantFindings: [],
+                      ~~~~~~~~~~~~~~~~
 
-    4 import { formatROM } from './formatting';
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:24:20 - error TS2339: Property 'joint' does not exist on type 'string'.
-
-    24           joint: p.joint,
-                          ~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:25:19 - error TS2339: Property 'side' does not exist on type 'string'.
-
-    25           side: p.side,
-                         ~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:26:25 - error TS2339: Property 'difference' does not exist on type 'string'.
-
-    26           difference: p.difference
-                               ~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:29:20 - error TS2339: Property 'joint' does not exist on type 'string'.
-
-    29           joint: p.joint,
-                          ~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:30:24 - error TS2339: Property 'intensity' does not exist on type 'string'.
-
-    30           intensity: p.intensity,
-                              ~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:31:23 - error TS2339: Property 'movement' does not exist on type 'string'.
-
-    31           movement: p.movement
-                             ~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:69:26 - error TS18048: 'data.patterns.unilateral.length' is possibly 'undefined'.
-
-    69     const hasAsymmetry = data.patterns?.unilateral?.length > 0;
-                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:70:21 - error TS18048: 'data.patterns.painful.length' is possibly 'undefined'.
-
-    70     const hasPain = data.patterns?.painful?.length > 0;
-                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:104:9 - error TS18048: 'data.patterns.unilateral.length' is possibly 'undefined'.
-
-    104     if (data.patterns?.unilateral?.length > 0) {
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:106:7 - error TS18048: 'data.patterns' is possibly 'undefined'.
-
-    106       data.patterns.unilateral.forEach(p => {
-              ~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:111:9 - error TS18048: 'data.patterns.painful.length' is possibly 'undefined'.
-
-    111     if (data.patterns?.painful?.length > 0) {
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:113:7 - error TS18048: 'data.patterns' is possibly 'undefined'.
-
-    113       data.patterns.painful.forEach(p => {
-              ~~~~~~~~~~~~~
-
- FAIL  src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts (18.132 s)
-  ● IADLAgent › validates IADL data correctly
+ FAIL  src/components/ReportGeneration/test.ts (18.915 s)
+  ● Report Generation System › successfully generates complete reports
 
     expect(received).toBe(expected) // Object.is equality
 
     Expected: true
     Received: false
 
-      27 |   it('validates IADL data correctly', async () => {
-      28 |     const result = await agent.validateData(mockData);
-    > 29 |     expect(result.valid).toBe(true);
-         |                          ^
-      30 |   });
-      31 |
-      32 |   it('processes IADL data with notes', async () => {
+       8 |     const sections = await orchestrator.generateReport(mockAssessmentData);
+       9 |     expect(sections.length).toBeGreaterThan(0);
+    > 10 |     expect(sections.every(s => s.valid)).toBe(true);
+         |                                          ^
+      11 |   });
+      12 | });
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:29:26)
+      at Object.<anonymous> (src/components/ReportGeneration/test.ts:10:42)
 
-  ● IADLAgent › processes IADL data with notes
+ FAIL  src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts (18.941 s)
+  ● AgentOrchestrator › handles empty data gracefully
 
-    TypeError: Cannot read properties of undefined (reading 'notes')
+    expect(received).toBe(expected) // Object.is equality
 
-      33 |     const result = await agent.processData(mockData);
-      34 |     expect(result.valid).toBe(true);
-    > 35 |     expect(result.activities.mealPrep.notes).toBe('Uses adaptive equipment');
-         |                                       ^
-      36 |   });
-      37 |
-      38 |   it('formats output by detail level', async () => {
+    Expected: true
+    Received: false
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:35:39)
+      22 |     const sections = await orchestrator.generateReport(emptyData);
+      23 |     sections.forEach(section => {
+    > 24 |       expect(section.valid).toBe(true);
+         |                             ^
+      25 |       expect(typeof section.content).toBe('string');
+      26 |     });
+      27 |   });
 
-  ● IADLAgent › formats output by detail level
+      at src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:24:29
+          at Array.forEach (<anonymous>)
+      at Object.<anonymous> (src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:23:14)
+
+ PASS  src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts (18.957 s)
+ PASS  src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts (18.969 s)
+ FAIL  src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts (19.008 s)
+  ● BasicADLAgent › generates appropriate recommendations
+
+    expect(received).toContainEqual(expected) // deep equality
+
+    Expected value: StringContaining "Modified Independent"
+    Received array: []
+
+      56 |   it('generates appropriate recommendations', async () => {
+      57 |     const result = await agent.processData(mockADLData);
+    > 58 |     expect(result.recommendations).toContainEqual(expect.stringContaining('Modified Independent'));
+         |                                    ^
+      59 |   });
+      60 |
+      61 |   it('formats output at different detail levels', async () => {
+
+      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:58:36)
+
+  ● BasicADLAgent › formats output at different detail levels
 
     expect(received).toContain(expected) // indexOf
 
-    Expected substring: "mealPrep: Modified Independent"
-    Received string:    "IADL Status:"
+    Expected substring: "Modified Independent:"
+    Received string:    "Basic ADL Assessment·
+    Independent:
+    - feeding
+    - dressing"
 
-      40 |
-      41 |     const brief = agent.formatByDetailLevel(processed, 'brief');
-    > 42 |     expect(brief).toContain('mealPrep: Modified Independent');
-         |                   ^
-      43 |
-      44 |     const standard = agent.formatByDetailLevel(processed, 'standard');
-      45 |     expect(standard).toContain('Assistance Level: Modified Independent');
+      68 |     const standard = agent.getFormattedContent(processed, 'standard');
+      69 |     expect(standard).toContain('Independent:');
+    > 70 |     expect(standard).toContain('Modified Independent:');
+         |                      ^
+      71 |     expect(standard).toContain('bathing (uses Shower chair, Hand-held shower)');
+      72 |
+      73 |     const detailed = agent.getFormattedContent(processed, 'detailed');
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:42:19)
+      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:70:22)
 
-  ● IADLAgent › generates complete section
+  ● BasicADLAgent › handles empty data gracefully
 
     expect(received).toBe(expected) // Object.is equality
 
-    Expected: true
-    Received: false
+    Expected: "total_assistance"
+    Received: "not_applicable"
 
-      51 |   it('generates complete section', async () => {
-      52 |     const section = await agent.generateSection(mockData);
-    > 53 |     expect(section.valid).toBe(true);
-         |                           ^
-      54 |     expect(section.content).toContain('Instrumental ADL Assessment');
-      55 |   });
-      56 | });
+      86 |     const result = await agent.processData(emptyData);
+      87 |     expect(result.valid).toBe(true);
+    > 88 |     expect(result.activities.feeding.assistanceLevel).toBe(INDEPENDENCE_LEVELS.TOTAL_ASSISTANCE);
+         |                                                       ^
+      89 |   });
+      90 | });
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:53:27)
-
- FAIL  src/components/ReportGeneration/test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:4:1 - error TS6133: 'formatROM' is declared but its value is never read.
-
-    4 import { formatROM } from './formatting';
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:24:20 - error TS2339: Property 'joint' does not exist on type 'string'.
-
-    24           joint: p.joint,
-                          ~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:25:19 - error TS2339: Property 'side' does not exist on type 'string'.
-
-    25           side: p.side,
-                         ~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:26:25 - error TS2339: Property 'difference' does not exist on type 'string'.
-
-    26           difference: p.difference
-                               ~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:29:20 - error TS2339: Property 'joint' does not exist on type 'string'.
-
-    29           joint: p.joint,
-                          ~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:30:24 - error TS2339: Property 'intensity' does not exist on type 'string'.
-
-    30           intensity: p.intensity,
-                              ~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:31:23 - error TS2339: Property 'movement' does not exist on type 'string'.
-
-    31           movement: p.movement
-                             ~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:69:26 - error TS18048: 'data.patterns.unilateral.length' is possibly 'undefined'.
-
-    69     const hasAsymmetry = data.patterns?.unilateral?.length > 0;
-                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:70:21 - error TS18048: 'data.patterns.painful.length' is possibly 'undefined'.
-
-    70     const hasPain = data.patterns?.painful?.length > 0;
-                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:104:9 - error TS18048: 'data.patterns.unilateral.length' is possibly 'undefined'.
-
-    104     if (data.patterns?.unilateral?.length > 0) {
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:106:7 - error TS18048: 'data.patterns' is possibly 'undefined'.
-
-    106       data.patterns.unilateral.forEach(p => {
-              ~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:111:9 - error TS18048: 'data.patterns.painful.length' is possibly 'undefined'.
-
-    111     if (data.patterns?.painful?.length > 0) {
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:113:7 - error TS18048: 'data.patterns' is possibly 'undefined'.
-
-    113       data.patterns.painful.forEach(p => {
-              ~~~~~~~~~~~~~
-
- PASS  src/components/ReportGeneration/agents/symptoms/__tests__/SymptomIntegrationAgent.test.ts (18.279 s)
- FAIL  src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts:15:21 - error TS2339: Property 'firstName' does not exist on type 'ProcessedDemographics'.
-
-    15       expect(result.firstName).toBe('John');
-                           ~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts:16:21 - error TS2339: Property 'lastName' does not exist on type 'ProcessedDemographics'.
-
-    16       expect(result.lastName).toBe('Doe');
-                           ~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts:17:21 - error TS2339: Property 'emergencyContact' does not exist on type 'ProcessedDemographics'.
-
-    17       expect(result.emergencyContact?.name).toBe('Jane Doe');
-                           ~~~~~~~~~~~~~~~~
-
- PASS  src/components/ReportGeneration/agents/symptoms/__tests__/PhysicalSymptomsAgent.test.ts (18.335 s)
- FAIL  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:3:26 - error TS6133: 'ROMOutput' is declared but its value is never read.
-
-    3 import { AssessmentData, ROMOutput } from '../../../types';
-                               ~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:72:26 - error TS18048: 'result.patterns' is possibly 'undefined'.
-
-    72     const hasAsymmetry = result.patterns.unilateral.some(p =>
-                                ~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:80:21 - error TS18048: 'result.patterns' is possibly 'undefined'.
-
-    80     const hasPain = result.patterns.painful.some(p =>
-                           ~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:112:33 - error TS2445: Property 'formatByDetailLevel' is protected and only accessible within class 'RangeOfMotionAgent' and its subclasses.
-
-    112       const briefFormat = agent.formatByDetailLevel(result, 'brief');
-                                        ~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:113:36 - error TS2445: Property 'formatByDetailLevel' is protected and only accessible within class 'RangeOfMotionAgent' and its subclasses.
-
-    113       const standardFormat = agent.formatByDetailLevel(result, 'standard');
-                                           ~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:114:36 - error TS2445: Property 'formatByDetailLevel' is protected and only accessible within class 'RangeOfMotionAgent' and its subclasses.
-
-    114       const detailedFormat = agent.formatByDetailLevel(result, 'detailed');
-                                           ~~~~~~~~~~~~~~~~~~~
-
- PASS  src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts (18.451 s)
- FAIL  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts:2:10 - error TS2459: Module '"../analysis"' declares 'identifyPatterns' locally, but it is not exported.
-
-    2 import { identifyPatterns, analyzeUpperExtremityFunction, analyzeLowerExtremityFunction } from '../analysis';
-               ~~~~~~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/RangeOfMotion/analysis.ts:33:10
-        33 function identifyPatterns(joints: JointROM): {
-                    ~~~~~~~~~~~~~~~~
-        'identifyPatterns' is declared here.
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts:2:28 - error TS2459: Module '"../analysis"' declares 'analyzeUpperExtremityFunction' locally, but it is not exported.
-
-    2 import { identifyPatterns, analyzeUpperExtremityFunction, analyzeLowerExtremityFunction } from '../analysis';
-                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/RangeOfMotion/analysis.ts:97:10
-        97 function analyzeUpperExtremityFunction(joints: JointROM, patterns: any, impacts: string[]): void {
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        'analyzeUpperExtremityFunction' is declared here.
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts:2:59 - error TS2459: Module '"../analysis"' declares 'analyzeLowerExtremityFunction' locally, but it is not exported.
-
-    2 import { identifyPatterns, analyzeUpperExtremityFunction, analyzeLowerExtremityFunction } from '../analysis';
-                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/RangeOfMotion/analysis.ts:133:10
-        133 function analyzeLowerExtremityFunction(joints: JointROM, patterns: any, impacts: string[]): void {
-                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        'analyzeLowerExtremityFunction' is declared here.
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts:12:54 - error TS7006: Parameter 'p' implicitly has an 'any' type.
-
-    12       const hasRestricted = patterns.restricted.some(p => p.match(/shoulder.*restricted/));
-                                                            ~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts:18:53 - error TS7006: Parameter 'p' implicitly has an 'any' type.
-
-    18       const hasAsymmetry = patterns.unilateral.some(p => p.match(/shoulder.*asymmetrical/));
-                                                           ~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts:24:48 - error TS7006: Parameter 'p' implicitly has an 'any' type.
-
-    24       const hasPainful = patterns.painful.some(p => p.match(/shoulder.*painful/));
-                                                      ~
-
- FAIL  src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/testing/mockContext.ts:26:5 - error TS2322: Type '{ detailLevel?: "brief" | "standard" | "detailed" | undefined; }' is not assignable to type '{ detailLevel: "brief" | "standard" | "detailed"; }'.
-      Types of property 'detailLevel' are incompatible.
-        Type '"brief" | "standard" | "detailed" | undefined' is not assignable to type '"brief" | "standard" | "detailed"'.
-          Type 'undefined' is not assignable to type '"brief" | "standard" | "detailed"'.
-
-    26     config: {
-           ~~~~~~
-
-      src/components/ReportGeneration/types.ts:8:3
-        8   config?: {
-            ~~~~~~
-        The expected type comes from property 'config' which is declared here on type 'AgentContext'
+      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:88:55)
 
 Summary of all failing tests
- FAIL  src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:15:21 - error TS2339: Property 'walkingDistance' does not exist on type 'MobilityOutput'.
-
-    15       expect(result.walkingDistance).toBe(100);
-                           ~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:16:21 - error TS2339: Property 'assistiveDevices' does not exist on type 'MobilityOutput'.
-
-    16       expect(result.assistiveDevices).toContain('Cane');
-                           ~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:17:21 - error TS2339: Property 'restrictions' does not exist on type 'MobilityOutput'.
-
-    17       expect(result.restrictions).toContain('No running');
-                           ~~~~~~~~~~~~
-
- FAIL  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/formatting.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/formatting.test.ts:2:10 - error TS2459: Module '"../formatting"' declares 'formatBrief' locally, but it is not exported.
-
-    2 import { formatBrief, formatStandard, formatDetailed } from '../formatting';
-               ~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/RangeOfMotion/formatting.ts:14:10
-        14 function formatBrief(data: ROMAnalysis): string {
-                    ~~~~~~~~~~~
-        'formatBrief' is declared here.
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/formatting.test.ts:2:23 - error TS2459: Module '"../formatting"' declares 'formatStandard' locally, but it is not exported.
-
-    2 import { formatBrief, formatStandard, formatDetailed } from '../formatting';
-                            ~~~~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/RangeOfMotion/formatting.ts:26:10
-        26 function formatStandard(data: ROMAnalysis): string {
-                    ~~~~~~~~~~~~~~
-        'formatStandard' is declared here.
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/formatting.test.ts:2:39 - error TS2459: Module '"../formatting"' declares 'formatDetailed' locally, but it is not exported.
-
-    2 import { formatBrief, formatStandard, formatDetailed } from '../formatting';
-                                            ~~~~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/RangeOfMotion/formatting.ts:61:10
-        61 function formatDetailed(data: ROMAnalysis): string {
-                    ~~~~~~~~~~~~~~
-        'formatDetailed' is declared here.
-
- FAIL  src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:9:17 - error TS2554: Expected 1 arguments, but got 0.
-
-    9         agent = new TransfersAgent();
-                      ~~~~~~~~~~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/narrative/TransfersAgent.ts:15:15
-        15   constructor(context: AgentContext) {
-                         ~~~~~~~~~~~~~~~~~~~~~
-        An argument for 'context' was not provided.
-    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:15:37 - error TS2339: Property 'generateNarrative' does not exist on type 'TransfersAgent'.
-
-    15             const narrative = agent.generateNarrative(mockData);
-                                           ~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:32:37 - error TS2339: Property 'generateNarrative' does not exist on type 'TransfersAgent'.
-
-    32             const narrative = agent.generateNarrative(mockData);
-                                           ~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:41:37 - error TS2339: Property 'generateNarrative' does not exist on type 'TransfersAgent'.
-
-    41             const narrative = agent.generateNarrative(mockData);
-                                           ~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:48:37 - error TS2339: Property 'generateNarrative' does not exist on type 'TransfersAgent'.
-
-    48             const narrative = agent.generateNarrative(mockData);
-                                           ~~~~~~~~~~~~~~~~~
-
- FAIL  src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts (17.832 s)
-  ● BasicADLAgent › processes ADL data correctly
-
-    expect(received).toBeDefined()
-
-    Received: undefined
-
-      25 |     const result = await agent.processData(sampleADLData);
-      26 |     expect(result.valid).toBe(true);
-    > 27 |     expect(result.activities.feeding).toBeDefined();
-         |                                       ^
-      28 |     expect(result.activities.bathing).toBeDefined();
-      29 |     expect(result.activities.dressing).toBeDefined();
-      30 |     expect(result.activities.toileting).toBeDefined();
-
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:27:39)
-
-  ● BasicADLAgent › formats output appropriately by detail level
-
-    expect(received).toContain(expected) // indexOf
-
-    Expected substring: "feeding: Independent"
-    Received string:    "Basic ADL Status:"
-
-      35 |
-      36 |     const brief = agent.formatByDetailLevel(processed, 'brief');
-    > 37 |     expect(brief).toContain('feeding: Independent');
-         |                   ^
-      38 |
-      39 |     const detailed = agent.formatByDetailLevel(processed, 'detailed');
-      40 |     expect(detailed).toContain('Assistance Level: Modified Independent');
-
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:37:19)
-
-  ● BasicADLAgent › generates complete section
-
-    expect(received).toBe(expected) // Object.is equality
-
-    Expected: true
-    Received: false
-
-      43 |   it('generates complete section', async () => {
-      44 |     const section = await agent.generateSection(sampleADLData);
-    > 45 |     expect(section.valid).toBe(true);
-         |                           ^
-      46 |     expect(section.content).toContain('Basic ADL Assessment');
-      47 |   });
-      48 | });
-
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:45:27)
-
- FAIL  src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:2:10 - error TS6133: 'mockContext' is declared but its value is never read.
-
-    2 import { mockContext, baseTestData } from '../../testing/mockData';
-               ~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:10:15 - error TS2304: Cannot find name 'createMockContext'.
-
-    10     context = createMockContext();
-                     ~~~~~~~~~~~~~~~~~
-
  FAIL  src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts
   ● Test suite failed to run
 
-    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:33:19 - error TS2339: Property 'documentation' does not exist on type 'DocumentationOutput'.
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:20:11 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
 
-    33     expect(result.documentation.medicalDocumentation).toHaveLength(1);
-                         ~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:34:19 - error TS2339: Property 'documentation' does not exist on type 'DocumentationOutput'.
+    20           relevantFindings: ['Normal vital signs', 'Stable condition'],
+                 ~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:32:11 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
 
-    34     expect(result.documentation.legalDocumentation).toHaveLength(1);
-                         ~~~~~~~~~~~~~
+    32           relevantFindings: [],
+                 ~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:72:15 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
 
- FAIL  src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts
-  ● Test suite failed to run
+    72               relevantFindings: [],
+                     ~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:110:15 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
 
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:4:1 - error TS6133: 'formatROM' is declared but its value is never read.
+    110               relevantFindings: [],
+                      ~~~~~~~~~~~~~~~~
 
-    4 import { formatROM } from './formatting';
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:24:20 - error TS2339: Property 'joint' does not exist on type 'string'.
-
-    24           joint: p.joint,
-                          ~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:25:19 - error TS2339: Property 'side' does not exist on type 'string'.
-
-    25           side: p.side,
-                         ~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:26:25 - error TS2339: Property 'difference' does not exist on type 'string'.
-
-    26           difference: p.difference
-                               ~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:29:20 - error TS2339: Property 'joint' does not exist on type 'string'.
-
-    29           joint: p.joint,
-                          ~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:30:24 - error TS2339: Property 'intensity' does not exist on type 'string'.
-
-    30           intensity: p.intensity,
-                              ~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:31:23 - error TS2339: Property 'movement' does not exist on type 'string'.
-
-    31           movement: p.movement
-                             ~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:69:26 - error TS18048: 'data.patterns.unilateral.length' is possibly 'undefined'.
-
-    69     const hasAsymmetry = data.patterns?.unilateral?.length > 0;
-                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:70:21 - error TS18048: 'data.patterns.painful.length' is possibly 'undefined'.
-
-    70     const hasPain = data.patterns?.painful?.length > 0;
-                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:104:9 - error TS18048: 'data.patterns.unilateral.length' is possibly 'undefined'.
-
-    104     if (data.patterns?.unilateral?.length > 0) {
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:106:7 - error TS18048: 'data.patterns' is possibly 'undefined'.
-
-    106       data.patterns.unilateral.forEach(p => {
-              ~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:111:9 - error TS18048: 'data.patterns.painful.length' is possibly 'undefined'.
-
-    111     if (data.patterns?.painful?.length > 0) {
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:113:7 - error TS18048: 'data.patterns' is possibly 'undefined'.
-
-    113       data.patterns.painful.forEach(p => {
-              ~~~~~~~~~~~~~
-
- FAIL  src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts (18.132 s)
-  ● IADLAgent › validates IADL data correctly
+ FAIL  src/components/ReportGeneration/test.ts (18.915 s)
+  ● Report Generation System › successfully generates complete reports
 
     expect(received).toBe(expected) // Object.is equality
 
     Expected: true
     Received: false
 
-      27 |   it('validates IADL data correctly', async () => {
-      28 |     const result = await agent.validateData(mockData);
-    > 29 |     expect(result.valid).toBe(true);
-         |                          ^
-      30 |   });
-      31 |
-      32 |   it('processes IADL data with notes', async () => {
+       8 |     const sections = await orchestrator.generateReport(mockAssessmentData);
+       9 |     expect(sections.length).toBeGreaterThan(0);
+    > 10 |     expect(sections.every(s => s.valid)).toBe(true);
+         |                                          ^
+      11 |   });
+      12 | });
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:29:26)
+      at Object.<anonymous> (src/components/ReportGeneration/test.ts:10:42)
 
-  ● IADLAgent › processes IADL data with notes
+ FAIL  src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts (18.941 s)
+  ● AgentOrchestrator › handles empty data gracefully
 
-    TypeError: Cannot read properties of undefined (reading 'notes')
+    expect(received).toBe(expected) // Object.is equality
 
-      33 |     const result = await agent.processData(mockData);
-      34 |     expect(result.valid).toBe(true);
-    > 35 |     expect(result.activities.mealPrep.notes).toBe('Uses adaptive equipment');
-         |                                       ^
-      36 |   });
-      37 |
-      38 |   it('formats output by detail level', async () => {
+    Expected: true
+    Received: false
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:35:39)
+      22 |     const sections = await orchestrator.generateReport(emptyData);
+      23 |     sections.forEach(section => {
+    > 24 |       expect(section.valid).toBe(true);
+         |                             ^
+      25 |       expect(typeof section.content).toBe('string');
+      26 |     });
+      27 |   });
 
-  ● IADLAgent › formats output by detail level
+      at src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:24:29
+          at Array.forEach (<anonymous>)
+      at Object.<anonymous> (src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:23:14)
+
+ FAIL  src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts (19.008 s)
+  ● BasicADLAgent › generates appropriate recommendations
+
+    expect(received).toContainEqual(expected) // deep equality
+
+    Expected value: StringContaining "Modified Independent"
+    Received array: []
+
+      56 |   it('generates appropriate recommendations', async () => {
+      57 |     const result = await agent.processData(mockADLData);
+    > 58 |     expect(result.recommendations).toContainEqual(expect.stringContaining('Modified Independent'));
+         |                                    ^
+      59 |   });
+      60 |
+      61 |   it('formats output at different detail levels', async () => {
+
+      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:58:36)
+
+  ● BasicADLAgent › formats output at different detail levels
 
     expect(received).toContain(expected) // indexOf
 
-    Expected substring: "mealPrep: Modified Independent"
-    Received string:    "IADL Status:"
+    Expected substring: "Modified Independent:"
+    Received string:    "Basic ADL Assessment·
+    Independent:
+    - feeding
+    - dressing"
 
-      40 |
-      41 |     const brief = agent.formatByDetailLevel(processed, 'brief');
-    > 42 |     expect(brief).toContain('mealPrep: Modified Independent');
-         |                   ^
-      43 |
-      44 |     const standard = agent.formatByDetailLevel(processed, 'standard');
-      45 |     expect(standard).toContain('Assistance Level: Modified Independent');
+      68 |     const standard = agent.getFormattedContent(processed, 'standard');
+      69 |     expect(standard).toContain('Independent:');
+    > 70 |     expect(standard).toContain('Modified Independent:');
+         |                      ^
+      71 |     expect(standard).toContain('bathing (uses Shower chair, Hand-held shower)');
+      72 |
+      73 |     const detailed = agent.getFormattedContent(processed, 'detailed');
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:42:19)
+      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:70:22)
 
-  ● IADLAgent › generates complete section
+  ● BasicADLAgent › handles empty data gracefully
 
     expect(received).toBe(expected) // Object.is equality
 
-    Expected: true
-    Received: false
+    Expected: "total_assistance"
+    Received: "not_applicable"
 
-      51 |   it('generates complete section', async () => {
-      52 |     const section = await agent.generateSection(mockData);
-    > 53 |     expect(section.valid).toBe(true);
-         |                           ^
-      54 |     expect(section.content).toContain('Instrumental ADL Assessment');
-      55 |   });
-      56 | });
+      86 |     const result = await agent.processData(emptyData);
+      87 |     expect(result.valid).toBe(true);
+    > 88 |     expect(result.activities.feeding.assistanceLevel).toBe(INDEPENDENCE_LEVELS.TOTAL_ASSISTANCE);
+         |                                                       ^
+      89 |   });
+      90 | });
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:53:27)
-
- FAIL  src/components/ReportGeneration/test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:4:1 - error TS6133: 'formatROM' is declared but its value is never read.
-
-    4 import { formatROM } from './formatting';
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:24:20 - error TS2339: Property 'joint' does not exist on type 'string'.
-
-    24           joint: p.joint,
-                          ~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:25:19 - error TS2339: Property 'side' does not exist on type 'string'.
-
-    25           side: p.side,
-                         ~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:26:25 - error TS2339: Property 'difference' does not exist on type 'string'.
-
-    26           difference: p.difference
-                               ~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:29:20 - error TS2339: Property 'joint' does not exist on type 'string'.
-
-    29           joint: p.joint,
-                          ~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:30:24 - error TS2339: Property 'intensity' does not exist on type 'string'.
-
-    30           intensity: p.intensity,
-                              ~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:31:23 - error TS2339: Property 'movement' does not exist on type 'string'.
-
-    31           movement: p.movement
-                             ~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:69:26 - error TS18048: 'data.patterns.unilateral.length' is possibly 'undefined'.
-
-    69     const hasAsymmetry = data.patterns?.unilateral?.length > 0;
-                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:70:21 - error TS18048: 'data.patterns.painful.length' is possibly 'undefined'.
-
-    70     const hasPain = data.patterns?.painful?.length > 0;
-                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:104:9 - error TS18048: 'data.patterns.unilateral.length' is possibly 'undefined'.
-
-    104     if (data.patterns?.unilateral?.length > 0) {
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:106:7 - error TS18048: 'data.patterns' is possibly 'undefined'.
-
-    106       data.patterns.unilateral.forEach(p => {
-              ~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:111:9 - error TS18048: 'data.patterns.painful.length' is possibly 'undefined'.
-
-    111     if (data.patterns?.painful?.length > 0) {
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/RangeOfMotionAgent.ts:113:7 - error TS18048: 'data.patterns' is possibly 'undefined'.
-
-    113       data.patterns.painful.forEach(p => {
-              ~~~~~~~~~~~~~
-
- FAIL  src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts:15:21 - error TS2339: Property 'firstName' does not exist on type 'ProcessedDemographics'.
-
-    15       expect(result.firstName).toBe('John');
-                           ~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts:16:21 - error TS2339: Property 'lastName' does not exist on type 'ProcessedDemographics'.
-
-    16       expect(result.lastName).toBe('Doe');
-                           ~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts:17:21 - error TS2339: Property 'emergencyContact' does not exist on type 'ProcessedDemographics'.
-
-    17       expect(result.emergencyContact?.name).toBe('Jane Doe');
-                           ~~~~~~~~~~~~~~~~
-
- FAIL  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:3:26 - error TS6133: 'ROMOutput' is declared but its value is never read.
-
-    3 import { AssessmentData, ROMOutput } from '../../../types';
-                               ~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:72:26 - error TS18048: 'result.patterns' is possibly 'undefined'.
-
-    72     const hasAsymmetry = result.patterns.unilateral.some(p =>
-                                ~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:80:21 - error TS18048: 'result.patterns' is possibly 'undefined'.
-
-    80     const hasPain = result.patterns.painful.some(p =>
-                           ~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:112:33 -
- error TS2445: Property 'formatByDetailLevel' is protected and only accessible within class 'RangeOfMotionAgent' and its subclasses.
-
-    112       const briefFormat = agent.formatByDetailLevel(result, 'brief');
-                                        ~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:113:36 - error TS2445: Property 'formatByDetailLevel' is protected and only accessible within class 'RangeOfMotionAgent' and its subclasses.
-
-    113       const standardFormat = agent.formatByDetailLevel(result, 'standard');
-                                           ~~~~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:114:36 - error TS2445: Property 'formatByDetailLevel' is protected and only accessible within class 'RangeOfMotionAgent' and its subclasses.
-
-    114       const detailedFormat = agent.formatByDetailLevel(result, 'detailed');
-                                           ~~~~~~~~~~~~~~~~~~~
-
- FAIL  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts:2:10 - error TS2459: Module '"../analysis"' declares 'identifyPatterns' locally, but it is not exported.
-
-    2 import { identifyPatterns, analyzeUpperExtremityFunction, analyzeLowerExtremityFunction } from '../analysis';
-               ~~~~~~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/RangeOfMotion/analysis.ts:33:10
-        33 function identifyPatterns(joints: JointROM): {
-                    ~~~~~~~~~~~~~~~~
-        'identifyPatterns' is declared here.
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts:2:28 - error TS2459: Module '"../analysis"' declares 'analyzeUpperExtremityFunction' locally, but it is not exported.
-
-    2 import { identifyPatterns, analyzeUpperExtremityFunction, analyzeLowerExtremityFunction } from '../analysis';
-                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/RangeOfMotion/analysis.ts:97:10
-        97 function analyzeUpperExtremityFunction(joints: JointROM, patterns: any, impacts: string[]): void {
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        'analyzeUpperExtremityFunction' is declared here.
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts:2:59 - error TS2459: Module '"../analysis"' declares 'analyzeLowerExtremityFunction' locally, but it is not exported.
-
-    2 import { identifyPatterns, analyzeUpperExtremityFunction, analyzeLowerExtremityFunction } from '../analysis';
-                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-      src/components/ReportGeneration/agents/RangeOfMotion/analysis.ts:133:10
-        133 function analyzeLowerExtremityFunction(joints: JointROM, patterns: any, impacts: string[]): void {
-                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        'analyzeLowerExtremityFunction' is declared here.
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts:12:54 - error TS7006: Parameter 'p' implicitly has an 'any' type.
-
-    12       const hasRestricted = patterns.restricted.some(p => p.match(/shoulder.*restricted/));
-                                                            ~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts:18:53 - error TS7006: Parameter 'p' implicitly has an 'any' type.
-
-    18       const hasAsymmetry = patterns.unilateral.some(p => p.match(/shoulder.*asymmetrical/));
-                                                           ~
-    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts:24:48 - error TS7006: Parameter 'p' implicitly has an 'any' type.
-
-    24       const hasPainful = patterns.painful.some(p => p.match(/shoulder.*painful/));
-                                                      ~
-
- FAIL  src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts
-  ● Test suite failed to run
-
-    src/components/ReportGeneration/testing/mockContext.ts:26:5 - error TS2322: Type '{ detailLevel?: "brief" | "standard" | "detailed" | undefined; }' is not assignable to type '{ detailLevel: "brief" | "standard" | "detailed"; }'.
-      Types of property 'detailLevel' are incompatible.
-        Type '"brief" | "standard" | "detailed" | undefined' is not assignable to type '"brief" | "standard" | "detailed"'.
-          Type 'undefined' is not assignable to type '"brief" | "standard" | "detailed"'.
-
-    26     config: {
-           ~~~~~~
-
-      src/components/ReportGeneration/types.ts:8:3
-        8   config?: {
-            ~~~~~~
-        The expected type comes from property 'config' which is declared here on type 'AgentContext'
+      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:88:55)
 
 
-Test Suites: 13 failed, 8 passed, 21 total
-Tests:       7 failed, 24 passed, 31 total
+Test Suites: 4 failed, 17 passed, 21 total
+Tests:       5 failed, 64 passed, 69 total
 Snapshots:   0 total
-Time:        20.333 s
+Time:        20.084 s
 Ran all test suites.
 
-d:\delilah>
+D:\delilah>

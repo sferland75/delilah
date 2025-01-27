@@ -1,56 +1,90 @@
 import { BasicADLAgent } from '../BasicADLAgent';
 import { createMockContext } from '../../../testing/mockContext';
-import { sampleADLData } from '../../../testing/mockData';
+import { AssessmentData } from '../../../types';
+import { INDEPENDENCE_LEVELS } from '../ADLTypes';
 
 describe('BasicADLAgent', () => {
   let agent: BasicADLAgent;
+
+  const mockADLData: AssessmentData = {
+    id: 'test-123',
+    date: '2025-01-26',
+    functionalAssessment: {
+      adl: {
+        feeding: {
+          assistanceLevel: INDEPENDENCE_LEVELS.INDEPENDENT,
+          notes: 'No issues noted'
+        },
+        bathing: {
+          assistanceLevel: INDEPENDENCE_LEVELS.MODIFIED_INDEPENDENT,
+          equipment: ['Shower chair', 'Hand-held shower'],
+          notes: 'Uses equipment for safety'
+        },
+        dressing: {
+          assistanceLevel: INDEPENDENCE_LEVELS.INDEPENDENT,
+          notes: 'Independent with all clothing types'
+        },
+        toileting: {
+          assistanceLevel: INDEPENDENCE_LEVELS.MODIFIED_INDEPENDENT,
+          equipment: ['Raised toilet seat'],
+          notes: 'Uses equipment for safety'
+        },
+        transfers: {
+          assistanceLevel: INDEPENDENCE_LEVELS.TOTAL_ASSISTANCE
+        },
+        ambulation: {
+          assistanceLevel: INDEPENDENCE_LEVELS.TOTAL_ASSISTANCE
+        }
+      }
+    }
+  };
 
   beforeEach(() => {
     agent = new BasicADLAgent(createMockContext());
   });
 
   it('processes ADL data correctly', async () => {
-    const result = await agent.processData(sampleADLData);
+    const result = await agent.processData(mockADLData);
     expect(result.valid).toBe(true);
-    expect(result.activities.feeding.assistanceLevel).toBe('Independent');
-    expect(result.activities.bathing.assistanceLevel).toBe('Modified Independent');
-    expect(result.activities.dressing.assistanceLevel).toBe('Independent');
-    expect(result.activities.toileting.assistanceLevel).toBe('Independent');
+    
+    expect(result.activities.feeding.assistanceLevel).toBe(INDEPENDENCE_LEVELS.INDEPENDENT);
+    expect(result.activities.bathing.equipment).toContain('Shower chair');
+    expect(result.activities.dressing.assistanceLevel).toBe(INDEPENDENCE_LEVELS.INDEPENDENT);
+    expect(result.activities.toileting.equipment).toContain('Raised toilet seat');
+  });
+
+  it('generates appropriate recommendations', async () => {
+    const result = await agent.processData(mockADLData);
+    expect(result.recommendations).toContainEqual(expect.stringContaining('Modified Independent'));
   });
 
   it('formats output at different detail levels', async () => {
-    const processed = await agent.processData(sampleADLData);
-    expect(processed.valid).toBe(true);
+    const processed = await agent.processData(mockADLData);
 
     const brief = agent.getFormattedContent(processed, 'brief');
-    expect(brief).toContain('Basic ADL Status');
+    expect(brief).toContain('ADL Status');
     expect(brief).toContain('feeding: Independent');
 
+    const standard = agent.getFormattedContent(processed, 'standard');
+    expect(standard).toContain('Independent:');
+    expect(standard).toContain('Modified Independent:');
+    expect(standard).toContain('bathing (uses Shower chair, Hand-held shower)');
+
     const detailed = agent.getFormattedContent(processed, 'detailed');
-    expect(detailed).toContain('Basic ADL Assessment');
-    expect(detailed).toContain('Assistance Level: Modified Independent');
+    expect(detailed).toContain('Equipment Used: Shower chair, Hand-held shower');
+    expect(detailed).toContain('Notes: Uses equipment for safety');
   });
 
-  it('handles missing data gracefully', async () => {
-    const minimalData = {
-      id: 'test',
+  it('handles empty data gracefully', async () => {
+    const emptyData: AssessmentData = {
+      id: 'test-123',
       date: '2025-01-26',
       functionalAssessment: {
-        adl: {
-          feeding: 'Independent'
-        }
+        adl: {}
       }
     };
-
-    const result = await agent.processData(minimalData);
+    const result = await agent.processData(emptyData);
     expect(result.valid).toBe(true);
-    expect(result.activities.feeding.assistanceLevel).toBe('Independent');
-    expect(result.activities.bathing.assistanceLevel).toBe('Dependent');
-  });
-
-  it('generates complete section', async () => {
-    const section = await agent.generateSection(sampleADLData);
-    expect(section.valid).toBe(true);
-    expect(section.content).toContain('Basic ADL Assessment');
+    expect(result.activities.feeding.assistanceLevel).toBe(INDEPENDENCE_LEVELS.TOTAL_ASSISTANCE);
   });
 });

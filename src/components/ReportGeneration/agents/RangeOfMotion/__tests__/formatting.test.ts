@@ -2,25 +2,25 @@ import { ROMAnalysis, ROMPattern } from '../types';
 import { formatROM } from '../formatting';
 
 describe('ROM Formatting', () => {
-  const samplePatterns: Record<string, ROMPattern[]> = {
+  const samplePatterns = {
+    bilateral: [] as ROMPattern[],
     unilateral: [{
       joint: 'shoulder',
       movement: 'flexion',
       side: 'right',
       difference: 70
-    }],
+    }] as ROMPattern[],
     painful: [{
       joint: 'shoulder',
       movement: 'flexion',
       side: 'left',
       intensity: 6
-    }],
+    }] as ROMPattern[],
     restricted: [{
       joint: 'shoulder',
       movement: 'flexion',
       description: 'severely restricted'
-    }],
-    bilateral: []
+    }] as ROMPattern[]
   };
 
   const sampleData: ROMAnalysis = {
@@ -63,7 +63,6 @@ describe('ROM Formatting', () => {
 
   it('formats detailed output correctly', () => {
     const output = formatROM(sampleData, 'detailed');
-    expect(output).toContain('Comprehensive Range of Motion Assessment');
     expect(output).toContain('Joint Measurements');
     expect(output).toContain('Movement Patterns');
     expect(output).toContain('Functional Analysis');

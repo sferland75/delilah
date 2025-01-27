@@ -1,38 +1,29 @@
 import { AgentContext } from '../types';
 
+// Mock logger implementation
 const noop = (_: string) => { /* no-op */ };
 
-const defaultLogger = {
-  log: noop,
-  error: noop,
-  warn: noop,
-  info: noop
+// Base context for testing
+const mockContext: AgentContext = {
+  logger: {
+    log: noop,
+    error: noop,
+    warn: noop,
+    info: noop
+  },
+  config: {
+    detailLevel: 'standard'
+  }
 };
 
-const defaultConfig = {
-  detailLevel: 'standard' as const
-};
-
-export const createMockContext = (overrides?: Partial<AgentContext>): AgentContext => {
-  const defaultContext: AgentContext = {
-    logger: defaultLogger,
-    config: defaultConfig
-  };
-
-  if (!overrides) return defaultContext;
-
+// Helper to create mock context with specific detail level
+export function createMockContext(detailLevel: "brief" | "standard" | "detailed" = "standard"): AgentContext {
   return {
-    ...defaultContext,
-    ...(overrides || {}),
-    logger: {
-      ...defaultLogger,
-      ...(overrides.logger || {})
-    },
+    ...mockContext,
     config: {
-      ...defaultConfig,
-      ...(overrides.config || {})
+      detailLevel
     }
   };
-};
+}
 
-export const mockContext = createMockContext();
+export { mockContext };

@@ -1,15 +1,35 @@
 import { BaseAgent } from './BaseAgent';
-import { AgentContext, AssessmentData, ProcessedData } from '../types';
+import { AgentContext, AssessmentData } from '../types';
 import _ from 'lodash';
 
-interface ProcessedDemographics extends ProcessedData {
-  personalInfo: {
-    fullName: string;
-    contact: {
-      email?: string;
-      phone?: string;
-      address?: string;
-    };
+interface Demographics {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  emergencyContact?: {
+    name: string;
+    phone?: string;
+    relationship?: string;
+  };
+  maritalStatus?: string;
+  children?: Array<{
+    age: number;
+  }>;
+  livingArrangement?: string;
+}
+
+interface DemographicsData {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  emergencyContact?: {
+    name: string;
+    phone?: string;
+    relationship?: string;
   };
   familyStatus: {
     maritalStatus?: string;
@@ -27,19 +47,21 @@ export class DemographicsAgent extends BaseAgent {
     super(context, 1.0, 'Demographics', ['demographics']);
   }
 
-  async processData(data: AssessmentData): Promise<ProcessedDemographics> {
-    const demographics = _.get(data, 'demographics', {});
+  async processData(data: AssessmentData): Promise<DemographicsData> {
+    const demographics = _.get(data, 'demographics', {}) as Demographics;
     
     return {
       valid: true,
-      personalInfo: {
-        fullName: `${demographics.firstName || ''} ${demographics.lastName || ''}`.trim(),
-        contact: {
-          email: demographics.email,
-          phone: demographics.phone,
-          address: demographics.address
-        }
-      },
+      firstName: demographics.firstName || '',
+      lastName: demographics.lastName || '',
+      email: demographics.email,
+      phone: demographics.phone,
+      address: demographics.address,
+      emergencyContact: demographics.emergencyContact ? {
+        name: demographics.emergencyContact.name,
+        phone: demographics.emergencyContact.phone,
+        relationship: demographics.emergencyContact.relationship
+      } : undefined,
       familyStatus: {
         maritalStatus: demographics.maritalStatus,
         children: {
@@ -51,45 +73,61 @@ export class DemographicsAgent extends BaseAgent {
     };
   }
 
-  protected formatByDetailLevel(data: ProcessedDemographics, level: "brief" | "standard" | "detailed"): string {
+  protected formatBrief(data: DemographicsData): string {
     const sections = ['Demographics:'];
+    sections.push(`\nName: ${data.firstName} ${data.lastName}`);
+    return sections.join('\n');
+  }
 
-    // Basic info always included
-    sections.push(`\nName: ${data.personalInfo.fullName}`);
-
-    if (level !== 'brief') {
-      // Contact info
-      if (data.personalInfo.contact.phone) {
-        sections.push(`Phone: ${data.personalInfo.contact.phone}`);
+  protected formatStandard(data: DemographicsData): string {
+    const sections = ['Demographics:'];
+    
+    // Basic info
+    sections.push(`\nName: ${data.firstName} ${data.lastName}`);
+    
+    // Contact info
+    if (data.phone) {
+      sections.push(`Phone: ${data.phone}`);
+    }
+    if (data.email) {
+      sections.push(`Email: ${data.email}`);
+    }
+    
+    // Emergency Contact
+    if (data.emergencyContact) {
+      sections.push('\nEmergency Contact:');
+      sections.push(`- Name: ${data.emergencyContact.name}`);
+      if (data.emergencyContact.phone) {
+        sections.push(`- Phone: ${data.emergencyContact.phone}`);
       }
-      if (data.personalInfo.contact.email) {
-        sections.push(`Email: ${data.personalInfo.contact.email}`);
-      }
-      
-      // Family status
-      if (data.familyStatus.maritalStatus) {
-        sections.push(`\nMarital Status: ${data.familyStatus.maritalStatus}`);
-      }
-      sections.push(`Children: ${data.familyStatus.children.count}`);
-
-      if (level === 'detailed') {
-        // Additional details
-        if (data.personalInfo.contact.address) {
-          sections.push(`\nAddress: ${data.personalInfo.contact.address}`);
-        }
-        if (data.familyStatus.livingArrangement) {
-          sections.push(`Living Arrangement: ${data.familyStatus.livingArrangement}`);
-        }
-        if (data.familyStatus.children.ages?.length) {
-          sections.push(`Children's Ages: ${data.familyStatus.children.ages.join(', ')}`);
-        }
+      if (data.emergencyContact.relationship) {
+        sections.push(`- Relationship: ${data.emergencyContact.relationship}`);
       }
     }
+    
+    // Family status
+    if (data.familyStatus.maritalStatus) {
+      sections.push(`\nMarital Status: ${data.familyStatus.maritalStatus}`);
+    }
+    sections.push(`Children: ${data.familyStatus.children.count}`);
 
     return sections.join('\n');
   }
 
-  format(data: ProcessedDemographics): string {
-    return this.formatByDetailLevel(data, this.context.config?.detailLevel || 'standard');
+  protected formatDetailed(data: DemographicsData): string {
+    const sections = this.formatStandard(data).split('\n');
+    
+    // Additional details
+    if (data.address) {
+      sections.push(`\nAddress: ${data.address}`);
+    }
+    if (data.familyStatus.livingArrangement) {
+      sections.push(`Living Arrangement: ${data.familyStatus.livingArrangement}`);
+    }
+    if (data.familyStatus.children.ages?.length) {
+      sections.push(`Children's Ages: ${data.familyStatus.children.ages.join(', ')}`);
+    }
+
+    return sections.join('\n');
   }
 }

@@ -1,0 +1,3 @@
+@echo off
+echo Testing specific agents...
+npx jest src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts
