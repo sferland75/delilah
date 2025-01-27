@@ -1,87 +1,62 @@
-import { AssessmentData } from '../../types';
-import { ReportSection, getSectionConfig, SectionConfig } from './ReportStructure';
-import { ReportSectionType, SectionContent } from './ReportSectionTypes';
+import { AgentContext, AssessmentData, ReportSection } from '../../../../types/report';
+import { AgentConfig } from './AgentConfig';
 
 export abstract class BaseAgent {
-    protected section: ReportSection;
-    protected config: SectionConfig;
+    protected context: AgentContext;
+    protected config: AgentConfig;
 
-    constructor(section: ReportSection) {
-        this.section = section;
-        this.config = getSectionConfig(section);
+    constructor(config: AgentConfig) {
+        this.context = config.context;
+        this.config = config;
     }
 
-    /**
-     * Main method to generate report section content
-     */
-    public abstract generateSection(data: AssessmentData): SectionContent;
-
-    /**
-     * Format structured data into report format
-     */
-    protected formatStructuredData(data: Record<string, any>): Record<string, any> {
-        return data;
+    abstract processData(data: AssessmentData): Promise<any>;
+    
+    async generateSection(data: AssessmentData): Promise<ReportSection> {
+        const processedData = await this.processData(data);
+        return {
+            title: this.config.title,
+            orderNumber: this.config.order,
+            type: 'structured',
+            content: await this.formatContent(processedData)
+        };
     }
 
-    /**
-     * Generate clinical observations with data integration
-     */
-    protected generateModerateNarrative(data: Record<string, any>): string {
-        return '';
-    }
+    protected abstract formatContent(data: any): Promise<string | any>;
 
-    /**
-     * Generate complex clinical analysis
-     */
-    protected generateFullNarrative(data: Record<string, any>): string {
-        return '';
-    }
-
-    /**
-     * Clinical measurement formatting
-     */
-    protected formatClinicalValue(value: any, unit?: string): string {
-        if (!value) return 'Not assessed';
-        return unit ? `${value} ${unit}` : value.toString();
-    }
-
-    /**
-     * Create clinical lists with proper formatting
-     */
     protected formatClinicalList(items: string[]): string {
-        if (!items?.length) return '';
+        if (!items || items.length === 0) return '';
+        
         if (items.length === 1) return items[0];
         
+        if (items.length === 2) return `${items[0]} and ${items[1]}`;
+        
         const lastItem = items[items.length - 1];
-        const otherItems = items.slice(0, -1);
-        return `${otherItems.join(', ')} and ${lastItem}`;
+        const otherItems = items.slice(0, -1).join(', ');
+        return `${otherItems}, and ${lastItem}`;
     }
 
-    /**
-     * Format dates in clinical report style
-     */
-    protected formatClinicalDate(date: string | Date): string {
-        if (!date) return '';
-        const d = new Date(date);
-        return d.toLocaleDateString('en-US', { 
+    protected formatClinicalValue(value: number, unit: string): string {
+        return `${value.toLocaleString()} ${unit}`;
+    }
+
+    protected formatClinicalDate(date: string): string {
+        return new Date(date).toLocaleDateString('en-CA', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
         });
     }
 
-    /**
-     * Validate section content matches expected type
-     */
-    protected validateContent(content: any): boolean {
-        switch (this.config.type) {
-            case ReportSectionType.STRUCTURED:
-                return typeof content === 'object';
-            case ReportSectionType.MODERATE_NARRATIVE:
-            case ReportSectionType.FULL_NARRATIVE:
-                return typeof content === 'string';
-            default:
-                return true;
+    protected validateRequired(data: any, fields: string[]): string[] {
+        const errors: string[] = [];
+        
+        for (const field of fields) {
+            if (!data || data[field] === undefined || data[field] === null || data[field] === '') {
+                errors.push(`Missing required field: ${field}`);
+            }
         }
+        
+        return errors;
     }
 }

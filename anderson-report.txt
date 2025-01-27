@@ -1,0 +1,238 @@
+Demographics
+Client: Patrick Anderson
+Date of Birth: 1962-01-01
+Gender: male
+Contact Information:
+  Phone: (613) 925-2216
+  Email: patrickanderson8@gmail.com
+  Address: 3651 Maple Avenue, Prescott ON K0E 1T0
+
+Emergency Contact:
+  Name: Gaisha Anderson
+  Relationship: Wife
+  Phone: Not provided
+
+Medical History
+Review of medical history indicates:
+Medical History Summary:
+
+Injury: Motorcycle accident.  Other car did left turn going north and pulled in front of him 30 yards.  Saw him, saw signal light, always cautious.  His Harley had lots of lights on it.  Push steered to the left and he was going 80 km/hr.  No recollection of anything after striking the other motorcycle.  First recollection is CAT Scnan then out again.  Set his arm he recalls and out again.  
+
+Current Treatment:
+Dr. Falamingo (gp), Steve Craigpettem (Private PT) (pt),  (),  ()
+
+Medications:
+  Esomeprazole (40 mg, Twice daily)
+  Silodocin (8 mg, Daily)
+  Nabilone (1 mg, As-needed, when "I feeld down" with pain.  )
+  Trazodone (50 mg, Nightly)
+  Meloxicam (15 mg, Daily)
+  Perindopril (8 mg, Daily)
+  Rosuvastatin (10 mg, Daily)
+  Metformin (500 mg, Daily)
+
+Symptoms Assessment
+The client reports the following symptoms:
+Physical Symptoms Assessment:
+
+Reported Symptoms:
+  Location: Right hip/Groin
+  Pain Type: Sharp
+  Severity: Very Severe
+  Frequency: Rarely
+
+  Location: Lower back
+  Pain Type: Stabbing
+  Severity: Severe
+  Frequency: Most of the time
+
+  Location: Right shoulder/arm
+  Pain Type: Sharp
+  Severity: Severe
+  Frequency: Rarely
+
+  Location: Neck
+  Pain Type: Aching
+  Severity: None
+  Frequency: Often
+
+  Location: Right thumb
+  Pain Type: Sharp
+  Severity: Moderate
+  Frequency: Often
+
+
+Mobility Assessment
+Physical examination revealed the following findings:
+Mobility Assessment:
+
+Range of Motion Assessment:
+
+Cervical Spine - Flexion:
+  Left: 45° (Active)
+  Right: 45° (Active)
+
+Cervical Spine - Extension:
+  Left: 45° (Active)
+  Right: 45° (Active)
+
+Cervical Spine - Left Lateral Flexion:
+  Left: 45° (Active)
+  Right: 45° (Active)
+
+Cervical Spine - Right Lateral Flexion:
+  Left: 45° (Active)
+  Right: 45° (Active)
+
+Cervical Spine - Left Rotation:
+  Left: 80° (Active)
+  Right: 80° (Active)
+
+Cervical Spine - Right Rotation:
+  Left: 80° (Active)
+  Right: 80° (Active)
+
+Thoracic/Lumbar Spine - Flexion:
+  Left: 80° (Active)
+  Right: 80° (Active)
+
+Thoracic/Lumbar Spine - Extension:
+  Left: 25° (Active)
+  Right: 25° (Active)
+
+Thoracic/Lumbar Spine - Left Lateral Flexion:
+  Left: 35° (Active)
+  Right: 35° (Active)
+
+Thoracic/Lumbar Spine - Right Lateral Flexion:
+  Left: 35° (Active)
+  Right: 35° (Active)
+
+Thoracic/Lumbar Spine - Left Rotation:
+  Left: 45° (Active)
+  Right: 45° (Active)
+
+Thoracic/Lumbar Spine - Right Rotation:
+  Left: 45° (Active)
+  Right: 45° (Active)
+
+Shoulder - Flexion:
+  Left: 180° (Active)
+  Right: 180° (Active)
+
+Shoulder - Extension:
+  Left: 60° (Active)
+  Right: 60° (Active)
+
+Shoulder - Abduction:
+  Left: 180° (Active)
+  Right: 180° (Active)
+
+Shoulder - Internal Rotation:
+  Left: 70° (Active)
+  Right: 70° (Active)
+
+Shoulder - External Rotation:
+  Left: 90° (Active)
+  Right: 90° (Active)
+
+Elbow - Flexion:
+  Left: 150° (Active)
+  Right: 150° (Active)
+
+Elbow - Extension:
+  Left: 0° (Active)
+  Right: 0° (Active)
+
+Elbow - Pronation:
+  Left: 80° (Active)
+  Right: 80° (Active)
+
+Elbow - Supination:
+  Left: 80° (Active)
+  Right: 80° (Active)
+
+Wrist - Flexion:
+  Left: 80° (Active)
+  Right: 80° (Active)
+
+Wrist - Extension:
+  Left: 70° (Active)
+  Right: 70° (Active)
+
+Wrist - Radial Deviation:
+  Left: 20° (Active)
+  Right: 20° (Active)
+
+Wrist - Ulnar Deviation:
+  Left: 30° (Active)
+  Right: 30° (Active)
+
+Hip - Flexion:
+  Left: 125° (Active)
+  Right: 125° (Active)
+
+Hip - Extension:
+  Left: 10° (Active)
+  Right: 10° (Active)
+
+Hip - Abduction:
+  Left: 45° (Active)
+  Right: 45° (Active)
+
+Hip - Adduction:
+  Left: 30° (Active)
+  Right: 30° (Active)
+
+Hip - Internal Rotation:
+  Left: 45° (Active)
+  Right: 45° (Active)
+
+Hip - External Rotation:
+  Left: 45° (Active)
+  Right: 45° (Active)
+
+Knee - Flexion:
+  Left: 135° (Active)
+  Right: 135° (Active)
+
+Knee - Extension:
+  Left: 0° (Active)
+  Right: 0° (Active)
+
+Ankle - Dorsiflexion:
+  Left: 20° (Active)
+  Right: 20° (Active)
+
+Ankle - Plantarflexion:
+  Left: 45° (Active)
+  Right: 45° (Active)
+
+Ankle - Inversion:
+  Left: 35° (Active)
+  Right: 35° (Active)
+
+Ankle - Eversion:
+  Left: 15° (Active)
+  Right: 15° (Active)
+
+Activities of Daily Living
+Functional assessment demonstrates the following capabilities:
+Activities of Daily Living Assessment:
+
+Basic ADLs:
+  Shower: Modified Independent
+  Grooming: Modified Independent
+  Lower Body: Total Assistance
+  Footwear: Maximal Assistance
+  Bed Transfer: Independent
+  Toilet Transfer: Modified Independent
+  Shower Transfer: Independent
+  Position Changes: Independent
+
+Instrumental ADLs:
+  Cleaning: Not Applicable
+  Laundry: Not Applicable
+  Meal Prep: Not Applicable
+  Home Maintenance: Independent
+  Transportation: Independent

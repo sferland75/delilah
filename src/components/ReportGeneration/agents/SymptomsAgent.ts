@@ -1,209 +1,171 @@
-import { BaseAgent } from './BaseAgent';
-import type { AgentContext } from './types';
-
-interface ProcessedSymptom {
-  category: string;
-  severity: string;
-  frequency: string;
-  description: string;
-  impact: string;
-  aggravating?: string;
-  relieving?: string;
-  management?: string;
-}
+import { Assessment } from '../../../types';
+import { BaseAgent } from './core/BaseAgent';
+import { ReportSection, ReportSectionType, SectionContent, ValidationResult } from '../../../types/report';
 
 export class SymptomsAgent extends BaseAgent {
-  private readonly severityOrder = ['Very Severe', 'Severe', 'Moderate', 'Mild', 'None'];
-  private readonly frequencyOrder = ['Constantly', 'Most of the time', 'Often', 'Sometimes', 'Rarely'];
+  processData(data: Assessment): ValidationResult {
+    const symptoms = data.assessment.symptoms;
+    
+    if (!symptoms) {
+      return {
+        valid: false,
+        errors: ['Missing symptoms data']
+      };
+    }
 
-  constructor(context: AgentContext) {
-    super(
-      context,
-      2,  // Priority in report
-      'Symptoms Assessment',
-      ['symptoms.physical', 'symptoms.cognitive', 'symptoms.emotional']
-    );
-  }
-
-  process(data: any) {
-    const symptoms = data.symptoms;
-    if (!symptoms) return null;
+    const errors = this.validateRequired(symptoms, [
+      'physical',
+      'cognitive',
+      'emotional'
+    ]);
 
     return {
-      physicalSymptoms: this.processPhysicalSymptoms(symptoms.physical || []),
-      cognitiveSymptoms: this.processCognitiveSymptoms(symptoms.cognitive || []),
-      emotionalSymptoms: this.processEmotionalSymptoms(symptoms.emotional || []),
-      generalNotes: symptoms.generalNotes,
-      summaryAnalysis: this.analyzeSymptomsOverall(symptoms)
+      valid: errors.length === 0,
+      errors
     };
   }
 
-  private processPhysicalSymptoms(symptoms: any[]): ProcessedSymptom[] {
-    return symptoms
-      .sort((a, b) => 
-        this.severityOrder.indexOf(a.severity) - this.severityOrder.indexOf(b.severity)
-      )
-      .map(symptom => ({
-        category: 'Physical',
-        severity: symptom.severity,
-        frequency: symptom.frequency,
-        description: `${symptom.painType || ''} ${symptom.location || ''}`.trim(),
-        impact: this.formatSeverityImpact(symptom.severity, symptom.frequency),
-        aggravating: symptom.aggravating,
-        relieving: symptom.relieving,
-        management: symptom.management
-      }));
-  }
+  formatBrief(data: Assessment): SectionContent {
+    const symptoms = data.assessment.symptoms;
+    const sections = this.generateBriefSummary(symptoms);
 
-  private processCognitiveSymptoms(symptoms: any[]): ProcessedSymptom[] {
-    return symptoms
-      .sort((a, b) => 
-        this.severityOrder.indexOf(a.severity) - this.severityOrder.indexOf(b.severity)
-      )
-      .map(symptom => ({
-        category: 'Cognitive',
-        severity: symptom.severity,
-        frequency: symptom.frequency,
-        description: symptom.symptom,
-        impact: symptom.impact,
-        management: symptom.management
-      }));
-  }
-
-  private processEmotionalSymptoms(symptoms: any[]): ProcessedSymptom[] {
-    return symptoms
-      .sort((a, b) => 
-        this.severityOrder.indexOf(a.severity) - this.severityOrder.indexOf(b.severity)
-      )
-      .map(symptom => ({
-        category: 'Emotional',
-        severity: symptom.severity,
-        frequency: symptom.frequency,
-        description: symptom.symptom,
-        impact: symptom.impact,
-        management: symptom.management
-      }));
-  }
-
-  private formatSeverityImpact(severity: string, frequency: string): string {
-    const severityLevel = this.severityOrder.indexOf(severity);
-    const frequencyLevel = this.frequencyOrder.indexOf(frequency);
-    
-    if (severityLevel <= 1 && frequencyLevel <= 2) {
-      return 'Significantly impacts daily function';
-    } else if (severityLevel <= 2 && frequencyLevel <= 3) {
-      return 'Moderately impacts daily function';
-    }
-    return 'Minimally impacts daily function';
-  }
-
-  private analyzeSymptomsOverall(symptoms: any) {
-    const analysis = {
-      primaryConcerns: [] as string[],
-      functionalImpacts: [] as string[],
-      treatmentResponses: [] as string[]
+    return {
+      type: ReportSectionType.NARRATIVE,
+      title: 'Current Symptoms Overview',
+      content: sections.join('\n\n'),
+      orderNumber: 3
     };
-
-    // Identify primary concerns
-    const severeSymptoms = [
-      ...(symptoms.physical || []),
-      ...(symptoms.cognitive || []),
-      ...(symptoms.emotional || [])
-    ].filter(s => ['Very Severe', 'Severe'].includes(s.severity));
-
-    if (severeSymptoms.length > 0) {
-      analysis.primaryConcerns = severeSymptoms.map(s => 
-        `${s.symptom || s.location} (${s.severity.toLowerCase()})`
-      );
-    }
-
-    // Analyze functional impacts
-    const frequentSymptoms = [
-      ...(symptoms.physical || []),
-      ...(symptoms.cognitive || []),
-      ...(symptoms.emotional || [])
-    ].filter(s => ['Constantly', 'Most of the time'].includes(s.frequency));
-
-    if (frequentSymptoms.length > 0) {
-      analysis.functionalImpacts = frequentSymptoms
-        .filter(s => s.impact)
-        .map(s => s.impact);
-    }
-
-    // Analyze treatment responses
-    const managedSymptoms = [
-      ...(symptoms.physical || []),
-      ...(symptoms.cognitive || []),
-      ...(symptoms.emotional || [])
-    ].filter(s => s.management || s.relieving);
-
-    if (managedSymptoms.length > 0) {
-      analysis.treatmentResponses = managedSymptoms
-        .filter(s => s.management || s.relieving)
-        .map(s => `${s.symptom || s.location}: ${s.management || s.relieving}`);
-    }
-
-    return analysis;
   }
 
-  format(data: any): string {
-    let report = 'SYMPTOMS ASSESSMENT\n\n';
+  formatDetailed(data: Assessment): SectionContent {
+    const symptoms = data.assessment.symptoms;
+    const sections = this.generateDetailedSummary(symptoms);
 
-    // Overall Analysis
-    if (data.summaryAnalysis) {
-      const analysis = data.summaryAnalysis;
-      
-      if (analysis.primaryConcerns.length > 0) {
-        report += 'Primary Concerns:\n';
-        analysis.primaryConcerns.forEach((concern: string) => {
-          report += `• ${concern}\n`;
-        });
-        report += '\n';
-      }
+    return {
+      type: ReportSectionType.STRUCTURED,
+      title: 'Detailed Symptoms Assessment',
+      content: sections.join('\n\n'),
+      orderNumber: 3
+    };
+  }
+
+  formatStandard(data: Assessment): SectionContent {
+    const symptoms = data.assessment.symptoms;
+    const sections = this.generateStandardSummary(symptoms);
+
+    return {
+      type: ReportSectionType.STRUCTURED,
+      title: 'Current Symptoms',
+      content: sections.join('\n\n'),
+      orderNumber: 3
+    };
+  }
+
+  private generateBriefSummary(symptoms: any): string[] {
+    const sections: string[] = [];
+
+    // Physical Symptoms Summary
+    if (symptoms.physical?.length) {
+      sections.push('### Physical Symptoms');
+      const locations = symptoms.physical.map((s: any) => s.location);
+      sections.push(`Client reports pain/symptoms in: ${this.formatClinicalList(locations)}`);
     }
 
-    // Physical Symptoms
-    if (data.physicalSymptoms?.length) {
-      report += 'Physical Symptoms:\n\n';
-      data.physicalSymptoms.forEach((symptom: ProcessedSymptom) => {
-        report += `${symptom.description}\n`;
-        report += `Severity: ${symptom.severity}, Frequency: ${symptom.frequency}\n`;
-        if (symptom.aggravating) report += `Aggravating Factors: ${symptom.aggravating}\n`;
-        if (symptom.relieving) report += `Relieving Factors: ${symptom.relieving}\n`;
-        report += '\n';
+    // Cognitive Symptoms Summary
+    if (symptoms.cognitive?.length) {
+      sections.push('### Cognitive Symptoms');
+      const issues = symptoms.cognitive.map((s: any) => s.symptom);
+      sections.push(`Client reports difficulties with: ${this.formatClinicalList(issues)}`);
+    }
+
+    return sections;
+  }
+
+  private generateDetailedSummary(symptoms: any): string[] {
+    const sections: string[] = [];
+
+    // Physical Symptoms Details
+    if (symptoms.physical?.length) {
+      sections.push('## Physical Symptoms');
+      symptoms.physical.forEach((symptom: any) => {
+        sections.push(`### ${symptom.location}`);
+        sections.push(`- **Type:** ${symptom.painType}`);
+        sections.push(`- **Severity:** ${symptom.severity}`);
+        sections.push(`- **Frequency:** ${symptom.frequency}`);
+        sections.push('#### Aggravating Factors');
+        sections.push(symptom.aggravating);
+        sections.push('#### Relieving Factors');
+        sections.push(symptom.relieving);
       });
     }
 
-    // Cognitive Symptoms
-    if (data.cognitiveSymptoms?.length) {
-      report += 'Cognitive Symptoms:\n\n';
-      data.cognitiveSymptoms.forEach((symptom: ProcessedSymptom) => {
-        report += `${symptom.description}\n`;
-        report += `Severity: ${symptom.severity}, Frequency: ${symptom.frequency}\n`;
-        if (symptom.impact) report += `Impact: ${symptom.impact}\n`;
-        if (symptom.management) report += `Management: ${symptom.management}\n`;
-        report += '\n';
+    // Cognitive Symptoms Details
+    if (symptoms.cognitive?.length) {
+      sections.push('## Cognitive Symptoms');
+      symptoms.cognitive.forEach((symptom: any) => {
+        sections.push(`### ${symptom.symptom}`);
+        sections.push(`- **Severity:** ${symptom.severity}`);
+        sections.push(`- **Frequency:** ${symptom.frequency}`);
+        sections.push('#### Impact');
+        sections.push(symptom.impact);
+        if (symptom.management) {
+          sections.push('#### Management Strategies');
+          sections.push(symptom.management);
+        }
       });
     }
 
-    // Emotional Symptoms
-    if (data.emotionalSymptoms?.length) {
-      report += 'Emotional Symptoms:\n\n';
-      data.emotionalSymptoms.forEach((symptom: ProcessedSymptom) => {
-        report += `${symptom.description}\n`;
-        report += `Severity: ${symptom.severity}, Frequency: ${symptom.frequency}\n`;
-        if (symptom.impact) report += `Impact: ${symptom.impact}\n`;
-        if (symptom.management) report += `Management: ${symptom.management}\n`;
-        report += '\n';
+    // Emotional Symptoms Details
+    if (symptoms.emotional?.length) {
+      sections.push('## Emotional Symptoms');
+      symptoms.emotional.forEach((symptom: any) => {
+        sections.push(`### ${symptom.symptom}`);
+        sections.push(`- **Severity:** ${symptom.severity}`);
+        sections.push(`- **Frequency:** ${symptom.frequency}`);
+        sections.push('#### Impact');
+        sections.push(symptom.impact);
+        if (symptom.management) {
+          sections.push('#### Management Strategies');
+          sections.push(symptom.management);
+        }
       });
     }
 
     // General Notes
-    if (data.generalNotes) {
-      report += 'Additional Observations:\n';
-      report += data.generalNotes + '\n\n';
+    if (symptoms.generalNotes) {
+      sections.push('## Additional Notes');
+      sections.push(symptoms.generalNotes);
     }
 
-    return report;
+    return sections;
+  }
+
+  private generateStandardSummary(symptoms: any): string[] {
+    const sections: string[] = [];
+
+    // Physical Symptoms
+    if (symptoms.physical?.length) {
+      sections.push('### Physical Symptoms');
+      symptoms.physical.forEach((symptom: any) => {
+        sections.push(`#### ${symptom.location} (${symptom.painType})`);
+        sections.push(`- Severity: ${symptom.severity}`);
+        sections.push(`- Frequency: ${symptom.frequency}`);
+        sections.push(`- Aggravating: ${symptom.aggravating}`);
+      });
+    }
+
+    // Cognitive and Emotional
+    const nonPhysical = [...(symptoms.cognitive || []), ...(symptoms.emotional || [])];
+    if (nonPhysical.length) {
+      sections.push('### Cognitive and Emotional Symptoms');
+      nonPhysical.forEach((symptom: any) => {
+        sections.push(`#### ${symptom.symptom}`);
+        sections.push(`- Severity: ${symptom.severity}`);
+        sections.push(`- Frequency: ${symptom.frequency}`);
+        sections.push(`- Impact: ${symptom.impact}`);
+      });
+    }
+
+    return sections;
   }
 }

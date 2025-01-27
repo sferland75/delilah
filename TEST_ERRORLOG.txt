@@ -3,251 +3,1280 @@ D:\delilah>npm test
 > delilah-agentic@1.0.0 test
 > jest
 
- PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/import-test.ts (11.339 s)
- PASS  src/components/ReportGeneration/agents/__tests__/utils.test.ts (11.928 s)
- PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/normalROM.test.ts (12.216 s)
- PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts (12.444 s)
- PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/types.test.ts
- PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/formatting.test.ts
- PASS  src/components/ReportGeneration/agents/symptoms/__tests__/PhysicalSymptomsAgent.test.ts (17.67 s)
- PASS  src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts (17.871 s)
- PASS  src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts (17.97 s)
- PASS  src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts (6.27 s)
- PASS  src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts (18.5 s)
- PASS  src/components/ReportGeneration/agents/symptoms/__tests__/SymptomIntegrationAgent.test.ts (6.044 s)
- PASS  src/components/ReportGeneration/agents/symptoms/__tests__/CognitiveSymptomAgent.test.ts (18.665 s)
- PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts (6.402 s)
- PASS  src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts (18.766 s)
+ PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/analysis.test.ts (9.999 s)
+ PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/import-test.ts (10.337 s)
+ PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/formatting.test.ts (10.143 s)
+ PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/normalROM.test.ts (10.622 s)
+ PASS  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/types.test.ts (10.117 s)
+ FAIL  src/components/ReportGeneration/agents/symptoms/__tests__/SymptomIntegrationAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/symptoms/__tests__/SymptomIntegrationAgent.test.ts:2:10 - error TS2305: Module '"../../../testing/mockData"' has no exported member 'mockContext'.
+
+    2 import { mockContext, sampleSymptomData } from '../../../testing/mockData';
+               ~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/SymptomIntegrationAgent.test.ts:2:23 - error TS2305: Module '"../../../testing/mockData"' has no exported member 'sampleSymptomData'.
+
+    2 import { mockContext, sampleSymptomData } from '../../../testing/mockData';
+                            ~~~~~~~~~~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/__tests__/utils.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/utils.ts:1:10 - error TS2305: Module '"./types"' has no exported member 'ReportSection'.
+
+    1 import { ReportSection } from './types';
+               ~~~~~~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:9:5 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    9     id: 'test-123',
+          ~~
+    src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:30:27 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
+
+    30     agent = new IADLAgent(createMockContext());
+                                 ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:43:25 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    43     const brief = agent.getFormattedContent(processed, 'brief');
+                               ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:47:28 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    47     const standard = agent.getFormattedContent(processed, 'standard');
+                                  ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:52:28 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    52     const detailed = agent.getFormattedContent(processed, 'detailed');
+                                  ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:64:7 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    64       id: 'test-123',
+             ~~
+
+ FAIL  src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:9:32 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
+
+    9     agent = new TransfersAgent(createMockContext());
+                                     ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:13:5 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    13     id: 'test',
+           ~~
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:77:31 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    77       const formatted = agent.getFormattedContent(result, 'brief');
+                                     ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:85:31 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    85       const formatted = agent.getFormattedContent(result, 'standard');
+                                     ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:92:31 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    92       const formatted = agent.getFormattedContent(result, 'detailed');
+                                     ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:101:9 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    101         id: 'test',
+                ~~
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:111:31 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    111       const formatted = agent.getFormattedContent(result, 'standard');
+                                      ~~~~~~~~~~~~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/symptoms/__tests__/CognitiveSymptomAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/symptoms/CognitiveSymptomAgent.ts:21:20 - error TS2554: Expected 1 arguments, but got 4.
+
+    21     super(context, 3.1, 'Cognitive Symptoms', ['symptoms.cognitive']);
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/CognitiveSymptomAgent.ts:24:9 - error TS2416: Property 'processData' in type 'CognitiveSymptomAgent' is not assignable to the same property in base type 'BaseAgent'.
+      Type '(data: AssessmentData) => Promise<CognitiveOutput>' is not assignable to type '(data: Assessment) => Promise<any>'.
+        Types of parameters 'data' and 'data' are incompatible.
+          Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    24   async processData(data: AssessmentData): Promise<CognitiveOutput> {
+               ~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+
+ FAIL  src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:2:10 - error TS2305: Module '"../../testing/mockData"' has no exported member 'mockMobilityData'.
+
+    2 import { mockMobilityData, createMockContext } from '../../testing/mockData';
+               ~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:2:28 - error TS2305: Module '"../../testing/mockData"' has no exported member 'createMockContext'.
+
+    2 import { mockMobilityData, createMockContext } from '../../testing/mockData';
+                                 ~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:33:46 - error TS2345: Argument of type 'AssessmentData' is not assignable to parameter of type 'Assessment'.
+      Type 'AssessmentData' is missing the following properties from type 'Assessment': demographics, adl, symptoms, environmental, and 5 more.
+
+    33       const result = await agent.processData(dataWithBalance);
+                                                    ~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:42:42 - error TS7006: Parameter 'r' implicitly has an 'any' type.
+
+    42       expect(result.recommendations.some(r => r.includes('training'))).toBe(true);
+                                                ~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:50:27 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    50       const brief = agent.getFormattedContent(result, 'brief');
+                                 ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:54:30 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    54       const detailed = agent.getFormattedContent(result, 'detailed');
+                                    ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:62:9 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    62         id: 'test',
+               ~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:71:46 - error TS2345: Argument of type 'AssessmentData' is not assignable to parameter of type 'Assessment'.
+      Type 'AssessmentData' is missing the following properties from type 'Assessment': demographics, adl, symptoms, environmental, and 5 more.
+
+    71       const result = await agent.processData(minimalData);
+                                                    ~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:72:31 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    72       const formatted = agent.getFormattedContent(result, 'standard');
+                                     ~~~~~~~~~~~~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/__tests__/MedicalHistoryAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/__tests__/MedicalHistoryAgent.test.ts:23:9 - error TS2353: Object literal may only specify known properties, and 'metadata' does not exist in type 'Partial<Assessment>'.
+
+    23         metadata: {
+               ~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/symptoms/__tests__/PhysicalSymptomsAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/symptoms/PhysicalSymptomsAgent.ts:2:39 - error TS2724: '"../../../../types/report"' has no exported member named 'ReportSectionType'. Did you mean 'ReportSection'?
+
+    2 import { AgentContext, ReportSection, ReportSectionType } from '../../../../types/report';
+                                            ~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/PhysicalSymptomsAgent.ts:14:21 - error TS2339: Property 'assessment' does not exist on type 'Assessment'.
+
+    14         return data.assessment.symptoms;
+                           ~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/PhysicalSymptomsAgent.ts:102:9 - error TS2739: Type '{ title: string; type: any; orderNumber: number; content: string; }' is missing the following properties from type 'ReportSection': sectionName, valid
+
+    102         return {
+                ~~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:10:36 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
+
+    10     agent = new RangeOfMotionAgent(createMockContext());
+                                          ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:35:44 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    35     const result = await agent.processData(testData);
+                                                  ~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:37:19 - error TS2339: Property 'data' does not exist on type 'ROMResult'.
+
+    37     expect(result.data.patterns).toBeDefined();
+                         ~~~~
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:41:44 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    41     const result = await agent.processData(testData);
+                                                  ~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:42:19 - error TS2339: Property 'data' does not exist on type 'ROMResult'.
+
+    42     expect(result.data.patterns.unilateral).toBeDefined();
+                         ~~~~
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:43:19 - error TS2339: Property 'data' does not exist on type 'ROMResult'.
+
+    43     expect(result.data.patterns.unilateral).toContainEqual({
+                         ~~~~
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:50:44 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    50     const result = await agent.processData(testData);
+                                                  ~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:51:19 - error TS2339: Property 'data' does not exist on type 'ROMResult'.
+
+    51     expect(result.data.patterns.painful).toBeDefined();
+                         ~~~~
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:52:19 - error TS2339: Property 'data' does not exist on type 'ROMResult'.
+
+    52     expect(result.data.patterns.painful).toContainEqual({
+                         ~~~~
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:60:44 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    60     const result = await agent.processData(testData);
+                                                  ~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:67:44 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    67     const result = await agent.processData(testData);
+                                                  ~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:74:44 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    74     const result = await agent.processData(testData);
+                                                  ~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+
+ FAIL  src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:9:5 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    9     id: 'test-123',
+          ~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:24:39 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
+
+    24     agent = new EmotionalSymptomAgent(createMockContext());
+                                             ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:37:25 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    37     const brief = agent.getFormattedContent(processed, 'brief');
+                               ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:41:28 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    41     const standard = agent.getFormattedContent(processed, 'standard');
+                                  ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:45:28 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    45     const detailed = agent.getFormattedContent(processed, 'detailed');
+                                  ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:52:7 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    52       id: 'test-123',
+             ~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:57:29 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    57     const formatted = agent.getFormattedContent(processed, 'standard');
+                                   ~~~~~~~~~~~~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/test.ts:2:10 - error TS2305: Module '"./testing/mockData"' has no exported member 'mockContext'.
+
+    2 import { mockContext, mockAssessmentData } from './testing/mockData';
+               ~~~~~~~~~~~
+    src/components/ReportGeneration/test.ts:8:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    8     const sections = await orchestrator.generateReport(mockAssessmentData);
+                                                             ~~~~~~~~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/test.ts:10:34 - error TS2339: Property 'valid' does not exist on type 'ReportSection'.
+
+    10     expect(sections.every(s => s.valid)).toBe(true);
+                                        ~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/__tests__/ADLAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/__tests__/ADLAgent.test.ts:1:26 - error TS2307: Cannot find module '../ADLAgent' or its corresponding type declarations.
+
+    1 import { ADLAgent } from '../ADLAgent';
+                               ~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/ADLAgent.test.ts:7:5 - error TS2739: Type '{ detailLevel: "standard"; }' is missing the following properties from type 'AgentConfig': includeMetrics, formatPreference
+
+    7     config: {
+          ~~~~~~
+
+      src/components/ReportGeneration/types.ts:123:3
+        123   config: AgentConfig;
+              ~~~~~~
+        The expected type comes from property 'config' which is declared here on type 'AgentContext'
+
  FAIL  src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts
   ● Test suite failed to run
 
-    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:20:11 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:9:5 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
 
-    20           relevantFindings: ['Normal vital signs', 'Stable condition'],
-                 ~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:32:11 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
+    9     id: 'test-123',
+          ~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:36:36 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
 
-    32           relevantFindings: [],
-                 ~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:72:15 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
+    36     agent = new DocumentationAgent(createMockContext());
+                                          ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:57:9 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
 
-    72               relevantFindings: [],
-                     ~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:110:15 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
+    57         id: 'test-123',
+               ~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:83:27 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-    110               relevantFindings: [],
-                      ~~~~~~~~~~~~~~~~
+    83       const brief = agent.getFormattedContent(result, 'brief');
+                                 ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:87:30 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
- FAIL  src/components/ReportGeneration/test.ts (18.915 s)
-  ● Report Generation System › successfully generates complete reports
+    87       const detailed = agent.getFormattedContent(result, 'detailed');
+                                    ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:95:9 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
 
-    expect(received).toBe(expected) // Object.is equality
+    95         id: 'test-123',
+               ~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:111:31 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-    Expected: true
-    Received: false
+    111       const formatted = agent.getFormattedContent(result, 'standard');
+                                      ~~~~~~~~~~~~~~~~~~~
 
-       8 |     const sections = await orchestrator.generateReport(mockAssessmentData);
-       9 |     expect(sections.length).toBeGreaterThan(0);
-    > 10 |     expect(sections.every(s => s.valid)).toBe(true);
-         |                                          ^
-      11 |   });
-      12 | });
+ FAIL  src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts
+  ● Test suite failed to run
 
-      at Object.<anonymous> (src/components/ReportGeneration/test.ts:10:42)
+    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:9:5 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
 
- FAIL  src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts (18.941 s)
-  ● AgentOrchestrator › handles empty data gracefully
+    9     id: 'test-123',
+          ~~
+    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:34:41 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
 
-    expect(received).toBe(expected) // Object.is equality
+    34     agent = new NarrativeTransfersAgent(createMockContext());
+                                               ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:62:27 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-    Expected: true
-    Received: false
+    62       const brief = agent.getFormattedContent(result, 'brief');
+                                 ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:65:30 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-      22 |     const sections = await orchestrator.generateReport(emptyData);
-      23 |     sections.forEach(section => {
-    > 24 |       expect(section.valid).toBe(true);
-         |                             ^
-      25 |       expect(typeof section.content).toBe('string');
-      26 |     });
-      27 |   });
+    65       const standard = agent.getFormattedContent(result, 'standard');
+                                    ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:69:30 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-      at src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:24:29
-          at Array.forEach (<anonymous>)
-      at Object.<anonymous> (src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:23:14)
+    69       const detailed = agent.getFormattedContent(result, 'detailed');
+                                    ~~~~~~~~~~~~~~~~~~~
 
- PASS  src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts (18.957 s)
- PASS  src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts (18.969 s)
- FAIL  src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts (19.008 s)
-  ● BasicADLAgent › generates appropriate recommendations
+ FAIL  src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts
+  ● Test suite failed to run
 
-    expect(received).toContainEqual(expected) // deep equality
+    src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:10:5 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
 
-    Expected value: StringContaining "Modified Independent"
-    Received array: []
+    10     id: 'test-123',
+           ~~
+    src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:43:31 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
 
-      56 |   it('generates appropriate recommendations', async () => {
-      57 |     const result = await agent.processData(mockADLData);
-    > 58 |     expect(result.recommendations).toContainEqual(expect.stringContaining('Modified Independent'));
-         |                                    ^
-      59 |   });
-      60 |
-      61 |   it('formats output at different detail levels', async () => {
+    43     agent = new BasicADLAgent(createMockContext());
+                                     ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:64:25 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:58:36)
+    64     const brief = agent.getFormattedContent(processed, 'brief');
+                               ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:68:28 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-  ● BasicADLAgent › formats output at different detail levels
+    68     const standard = agent.getFormattedContent(processed, 'standard');
+                                  ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:73:28 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-    expect(received).toContain(expected) // indexOf
+    73     const detailed = agent.getFormattedContent(processed, 'detailed');
+                                  ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:80:7 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
 
-    Expected substring: "Modified Independent:"
-    Received string:    "Basic ADL Assessment·
-    Independent:
-    - feeding
-    - dressing"
+    80       id: 'test-123',
+             ~~
 
-      68 |     const standard = agent.getFormattedContent(processed, 'standard');
-      69 |     expect(standard).toContain('Independent:');
-    > 70 |     expect(standard).toContain('Modified Independent:');
-         |                      ^
-      71 |     expect(standard).toContain('bathing (uses Shower chair, Hand-held shower)');
-      72 |
-      73 |     const detailed = agent.getFormattedContent(processed, 'detailed');
+ FAIL  src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts
+  ● Test suite failed to run
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:70:22)
+    src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts:2:57 - error TS2307: Cannot find module '../../../types/report' or its corresponding type declarations.
 
-  ● BasicADLAgent › handles empty data gracefully
+    2 import { AgentContext, Assessment, ProcessedData } from '../../../types/report';
+                                                              ~~~~~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts:50:18 - error TS2445: Property 'name' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-    expect(received).toBe(expected) // Object.is equality
+    50     expect(agent.name).toBe('Test Section');
+                        ~~~~
+    src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts:51:18 - error TS2445: Property 'priority' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-    Expected: "total_assistance"
-    Received: "not_applicable"
+    51     expect(agent.priority).toBe(1);
+                        ~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts:98:49 - error TS2345: Argument of type '{ demographics: null; id?: string; date?: string; adl: ADLData; symptoms: SymptomsData; environmental: EnvironmentalData; medicalHistory: MedicalHistoryData; functionalAssessment: FunctionalAssessmentData; documentation: DocumentationData; typicalDay: TypicalDayData; amaGuides: AMAGuidesData; }' is not assignable to parameter of type 'Assessment'.
+      Types of property 'demographics' are incompatible.
+        Type 'null' is not assignable to type 'DemographicsData'.
 
-      86 |     const result = await agent.processData(emptyData);
-      87 |     expect(result.valid).toBe(true);
-    > 88 |     expect(result.activities.feeding.assistanceLevel).toBe(INDEPENDENCE_LEVELS.TOTAL_ASSISTANCE);
-         |                                                       ^
-      89 |   });
-      90 | });
+    98     const section = await agent.generateSection(invalidData);
+                                                       ~~~~~~~~~~~
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:88:55)
+ FAIL  src/components/ReportGeneration/__tests__/anderson.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/__tests__/anderson.test.ts:11:33 - error TS2345: Argument of type 'string | Buffer<ArrayBufferLike>' is not assignable to parameter of type 'string'.
+      Type 'Buffer<ArrayBufferLike>' is not assignable to type 'string'.
+
+    11     assessmentData = JSON.parse(response);
+                                       ~~~~~~~~
+    src/components/ReportGeneration/__tests__/anderson.test.ts:37:41 - error TS2345: Argument of type '{ medicalHistory: undefined; id?: string; date?: string; demographics: DemographicsData; adl: ADLData; symptoms: SymptomsData; environmental: EnvironmentalData; functionalAssessment: FunctionalAssessmentData; documentation: DocumentationData; typicalDay: TypicalDayData; amaGuides: AMAGuidesData; }' is not assignable to parameter of type 'Assessment'.
+      Types of property 'medicalHistory' are incompatible.
+        Type 'undefined' is not assignable to type 'MedicalHistoryData'.
+
+    37     const report = await generateReport(partialData, context);
+                                               ~~~~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:9:46 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
+
+    9   const orchestrator = new AgentOrchestrator(context);
+                                                   ~~~~~~~
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:12:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    12     const sections = await orchestrator.generateReport(mockAssessmentData);
+                                                              ~~~~~~~~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:17:22 - error TS2339: Property 'valid' does not exist on type 'ReportSection'.
+
+    17       expect(section.valid).toBe(true);
+                            ~~~~~
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:31:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    31     const sections = await orchestrator.generateReport(emptyData);
+                                                              ~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:33:22 - error TS2339: Property 'valid' does not exist on type 'ReportSection'.
+
+    33       expect(section.valid).toBe(true);
+                            ~~~~~
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:39:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    39     const sections = await orchestrator.generateReport(mockAssessmentData);
+                                                              ~~~~~~~~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:51:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    51     const sections = await orchestrator.generateReport(partialData);
+                                                              ~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:54:22 - error TS2339: Property 'valid' does not exist on type 'ReportSection'.
+
+    54       expect(section.valid).toBe(true);
+                            ~~~~~
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:61:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    61     const sections = await orchestrator.generateReport(invalidData);
+                                                              ~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:68:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    68     const sections = await orchestrator.generateReport(mockAssessmentData);
+                                                              ~~~~~~~~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:72:31 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ReportSectionType'.
+
+    72       expect(sectionTypes.has(type)).toBe(true);
+                                     ~~~~
+
+ FAIL  src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/DemographicsAgent.ts:54:20 - error TS2554: Expected 1 arguments, but got 4.
+
+    54     super(context, 1.0, 'Demographics', ['demographics']);
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/DemographicsAgent.ts:57:9 - error TS2416: Property 'processData' in type 'DemographicsAgent' is not assignable to the same property in base type 'BaseAgent'.
+      Type '(data: AssessmentData) => Promise<DemographicsData>' is not assignable to type '(data: Assessment) => Promise<any>'.
+        Types of parameters 'data' and 'data' are incompatible.
+          Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    57   async processData(data: AssessmentData): Promise<DemographicsData> {
+               ~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
 
 Summary of all failing tests
+ FAIL  src/components/ReportGeneration/agents/symptoms/__tests__/SymptomIntegrationAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/symptoms/__tests__/SymptomIntegrationAgent.test.ts:2:10 - error TS2305: Module '"../../../testing/mockData"' has no exported member 'mockContext'.
+
+    2 import { mockContext, sampleSymptomData } from '../../../testing/mockData';
+               ~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/SymptomIntegrationAgent.test.ts:2:23 - error TS2305: Module '"../../../testing/mockData"' has no exported member 'sampleSymptomData'.
+
+    2 import { mockContext, sampleSymptomData } from '../../../testing/mockData';
+                            ~~~~~~~~~~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/__tests__/utils.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/utils.ts:1:10 - error TS2305: Module '"./types"' has no exported member 'ReportSection'.
+
+    1 import { ReportSection } from './types';
+               ~~~~~~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:9:5 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    9     id: 'test-123',
+          ~~
+    src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:30:27 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
+
+    30     agent = new IADLAgent(createMockContext());
+                                 ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:43:25 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    43     const brief = agent.getFormattedContent(processed, 'brief');
+                               ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:47:28 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    47     const standard = agent.getFormattedContent(processed, 'standard');
+                                  ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:52:28 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    52     const detailed = agent.getFormattedContent(processed, 'detailed');
+                                  ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/IADLAgent.test.ts:64:7 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    64       id: 'test-123',
+             ~~
+
+ FAIL  src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:9:32 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
+
+    9     agent = new TransfersAgent(createMockContext());
+                                     ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:13:5 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    13     id: 'test',
+           ~~
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:77:31 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    77       const formatted = agent.getFormattedContent(result, 'brief');
+                                     ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:85:31 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    85       const formatted = agent.getFormattedContent(result, 'standard');
+                                     ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:92:31 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    92       const formatted = agent.getFormattedContent(result, 'detailed');
+                                     ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:101:9 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    101         id: 'test',
+                ~~
+    src/components/ReportGeneration/agents/__tests__/TransfersAgent.test.ts:111:31 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    111       const formatted = agent.getFormattedContent(result, 'standard');
+                                      ~~~~~~~~~~~~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/symptoms/__tests__/CognitiveSymptomAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/symptoms/CognitiveSymptomAgent.ts:21:20 - error TS2554: Expected 1 arguments, but got 4.
+
+    21     super(context, 3.1, 'Cognitive Symptoms', ['symptoms.cognitive']);
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/CognitiveSymptomAgent.ts:24:9 - error TS2416: Property 'processData' in type 'CognitiveSymptomAgent' is not assignable to the same property in base type 'BaseAgent'.
+      Type '(data: AssessmentData) => Promise<CognitiveOutput>' is not assignable to type '(data: Assessment) => Promise<any>'.
+        Types of parameters 'data' and 'data' are incompatible.
+          Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    24   async processData(data: AssessmentData): Promise<CognitiveOutput> {
+               ~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+
+ FAIL  src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:2:10 - error TS2305: Module '"../../testing/mockData"' has no exported member 'mockMobilityData'.
+
+    2 import { mockMobilityData, createMockContext } from '../../testing/mockData';
+               ~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:2:28 - error TS2305: Module '"../../testing/mockData"' has no exported member 'createMockContext'.
+
+    2 import { mockMobilityData, createMockContext } from '../../testing/mockData';
+                                 ~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:33:46 - error TS2345: Argument of type 'AssessmentData' is not assignable to parameter of type 'Assessment'.
+      Type 'AssessmentData' is missing the following properties from type 'Assessment': demographics, adl, symptoms, environmental, and 5 more.
+
+    33       const result = await agent.processData(dataWithBalance);
+                                                    ~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:42:42 - error TS7006: Parameter 'r' implicitly has an 'any' type.
+
+    42       expect(result.recommendations.some(r => r.includes('training'))).toBe(true);
+                                                ~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:50:27 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    50       const brief = agent.getFormattedContent(result, 'brief');
+                                 ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:54:30 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    54       const detailed = agent.getFormattedContent(result, 'detailed');
+                                    ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:62:9 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    62         id: 'test',
+               ~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:71:46 - error TS2345: Argument of type 'AssessmentData' is not assignable to parameter of type 'Assessment'.
+      Type 'AssessmentData' is missing the following properties from type 'Assessment': demographics, adl, symptoms, environmental, and 5 more.
+
+    71       const result = await agent.processData(minimalData);
+                                                    ~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/MobilityAgent.test.ts:72:31 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    72       const formatted = agent.getFormattedContent(result, 'standard');
+                                     ~~~~~~~~~~~~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/__tests__/MedicalHistoryAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/__tests__/MedicalHistoryAgent.test.ts:23:9 - error TS2353: Object literal may only specify known properties, and 'metadata' does not exist in type 'Partial<Assessment>'.
+
+    23         metadata: {
+               ~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/symptoms/__tests__/PhysicalSymptomsAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/symptoms/PhysicalSymptomsAgent.ts:2:39 - error TS2724: '"../../../../types/report"' has no exported member named 'ReportSectionType'. Did you mean 'ReportSection'?
+
+    2 import { AgentContext, ReportSection, ReportSectionType } from '../../../../types/report';
+                                            ~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/PhysicalSymptomsAgent.ts:14:21 - error TS2339: Property 'assessment' does not exist on type 'Assessment'.
+
+    14         return data.assessment.symptoms;
+                           ~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/PhysicalSymptomsAgent.ts:102:9 - error TS2739: Type '{ title: string; type: any; orderNumber: number; content: string; }' is missing the following properties from type 'ReportSection': sectionName, valid
+
+    102         return {
+                ~~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:10:36 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
+
+    10     agent = new RangeOfMotionAgent(createMockContext());
+                                          ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:35:44 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    35     const result = await agent.processData(testData);
+                                                  ~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:37:19 - error TS2339: Property 'data' does not exist on type 'ROMResult'.
+
+    37     expect(result.data.patterns).toBeDefined();
+                         ~~~~
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:41:44 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    41     const result = await agent.processData(testData);
+                                                  ~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:42:19 - error TS2339: Property 'data' does not exist on type 'ROMResult'.
+
+    42     expect(result.data.patterns.unilateral).toBeDefined();
+                         ~~~~
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:43:19 - error TS2339: Property 'data' does not exist on type 'ROMResult'.
+
+    43     expect(result.data.patterns.unilateral).toContainEqual({
+                         ~~~~
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:50:44 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    50     const result = await agent.processData(testData);
+                                                  ~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:51:19 - error TS2339: Property 'data' does not exist on type 'ROMResult'.
+
+    51     expect(result.data.patterns.painful).toBeDefined();
+                         ~~~~
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:52:19 - error TS2339: Property 'data' does not exist on type 'ROMResult'.
+
+    52     expect(result.data.patterns.painful).toContainEqual({
+                         ~~~~
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:60:44 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    60     const result = await agent.processData(testData);
+                                                  ~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:67:44 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    67     const result = await agent.processData(testData);
+                                                  ~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/agents/RangeOfMotion/__tests__/RangeOfMotionAgent.test.ts:74:44 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    74     const result = await agent.processData(testData);
+                                                  ~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+
+ FAIL  src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:9:5 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    9     id: 'test-123',
+          ~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:24:39 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
+
+    24     agent = new EmotionalSymptomAgent(createMockContext());
+                                             ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:37:25 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    37     const brief = agent.getFormattedContent(processed, 'brief');
+                               ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:41:28 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    41     const standard = agent.getFormattedContent(processed, 'standard');
+                                  ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:45:28 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    45     const detailed = agent.getFormattedContent(processed, 'detailed');
+                                  ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:52:7 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
+
+    52       id: 'test-123',
+             ~~
+    src/components/ReportGeneration/agents/symptoms/__tests__/EmotionalSymptomAgent.test.ts:57:29 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
+
+    57     const formatted = agent.getFormattedContent(processed, 'standard');
+                                   ~~~~~~~~~~~~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/test.ts:2:10 - error TS2305: Module '"./testing/mockData"' has no exported member 'mockContext'.
+
+    2 import { mockContext, mockAssessmentData } from './testing/mockData';
+               ~~~~~~~~~~~
+    src/components/ReportGeneration/test.ts:8:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    8     const sections = await orchestrator.generateReport(mockAssessmentData);
+                                                             ~~~~~~~~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/test.ts:10:34 - error TS2339: Property 'valid' does not exist on type 'ReportSection'.
+
+    10     expect(sections.every(s => s.valid)).toBe(true);
+                                        ~~~~~
+
+ FAIL  src/components/ReportGeneration/agents/__tests__/ADLAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/__tests__/ADLAgent.test.ts:1:26 - error TS2307: Cannot find module '../ADLAgent' or its corresponding type declarations.
+
+    1 import { ADLAgent } from '../ADLAgent';
+                               ~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/ADLAgent.test.ts:7:5 - error TS2739: Type '{ detailLevel: "standard"; }' is missing the following properties from type 'AgentConfig': includeMetrics, formatPreference
+
+    7     config: {
+          ~~~~~~
+
+      src/components/ReportGeneration/types.ts:123:3
+        123   config: AgentConfig;
+              ~~~~~~
+        The expected type comes from property 'config' which is declared here on type 'AgentContext'
+
  FAIL  src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts
   ● Test suite failed to run
 
-    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:20:11 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:9:5 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
 
-    20           relevantFindings: ['Normal vital signs', 'Stable condition'],
-                 ~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:32:11 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
+    9     id: 'test-123',
+          ~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:36:36 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
 
-    32           relevantFindings: [],
-                 ~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:72:15 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
+    36     agent = new DocumentationAgent(createMockContext());
+                                          ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:57:9 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
 
-    72               relevantFindings: [],
-                     ~~~~~~~~~~~~~~~~
-    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:110:15 - error TS2353: Object literal may only specify known properties, and 'relevantFindings' does not exist in type 'DocumentationRecord'.
+    57         id: 'test-123',
+               ~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:83:27 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-    110               relevantFindings: [],
-                      ~~~~~~~~~~~~~~~~
+    83       const brief = agent.getFormattedContent(result, 'brief');
+                                 ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:87:30 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
- FAIL  src/components/ReportGeneration/test.ts (18.915 s)
-  ● Report Generation System › successfully generates complete reports
+    87       const detailed = agent.getFormattedContent(result, 'detailed');
+                                    ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:95:9 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
 
-    expect(received).toBe(expected) // Object.is equality
+    95         id: 'test-123',
+               ~~
+    src/components/ReportGeneration/agents/__tests__/DocumentationAgent.test.ts:111:31 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-    Expected: true
-    Received: false
+    111       const formatted = agent.getFormattedContent(result, 'standard');
+                                      ~~~~~~~~~~~~~~~~~~~
 
-       8 |     const sections = await orchestrator.generateReport(mockAssessmentData);
-       9 |     expect(sections.length).toBeGreaterThan(0);
-    > 10 |     expect(sections.every(s => s.valid)).toBe(true);
-         |                                          ^
-      11 |   });
-      12 | });
+ FAIL  src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts
+  ● Test suite failed to run
 
-      at Object.<anonymous> (src/components/ReportGeneration/test.ts:10:42)
+    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:9:5 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
 
- FAIL  src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts (18.941 s)
-  ● AgentOrchestrator › handles empty data gracefully
+    9     id: 'test-123',
+          ~~
+    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:34:41 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
 
-    expect(received).toBe(expected) // Object.is equality
+    34     agent = new NarrativeTransfersAgent(createMockContext());
+                                               ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:62:27 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-    Expected: true
-    Received: false
+    62       const brief = agent.getFormattedContent(result, 'brief');
+                                 ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:65:30 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-      22 |     const sections = await orchestrator.generateReport(emptyData);
-      23 |     sections.forEach(section => {
-    > 24 |       expect(section.valid).toBe(true);
-         |                             ^
-      25 |       expect(typeof section.content).toBe('string');
-      26 |     });
-      27 |   });
+    65       const standard = agent.getFormattedContent(result, 'standard');
+                                    ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/narrative/__tests__/TransfersAgent.test.ts:69:30 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-      at src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:24:29
-          at Array.forEach (<anonymous>)
-      at Object.<anonymous> (src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:23:14)
+    69       const detailed = agent.getFormattedContent(result, 'detailed');
+                                    ~~~~~~~~~~~~~~~~~~~
 
- FAIL  src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts (19.008 s)
-  ● BasicADLAgent › generates appropriate recommendations
+ FAIL  src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts
+  ● Test suite failed to run
 
-    expect(received).toContainEqual(expected) // deep equality
+    src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:10:5 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
 
-    Expected value: StringContaining "Modified Independent"
-    Received array: []
+    10     id: 'test-123',
+           ~~
+    src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:43:31 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
 
-      56 |   it('generates appropriate recommendations', async () => {
-      57 |     const result = await agent.processData(mockADLData);
-    > 58 |     expect(result.recommendations).toContainEqual(expect.stringContaining('Modified Independent'));
-         |                                    ^
-      59 |   });
-      60 |
-      61 |   it('formats output at different detail levels', async () => {
+    43     agent = new BasicADLAgent(createMockContext());
+                                     ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:64:25 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:58:36)
+    64     const brief = agent.getFormattedContent(processed, 'brief');
+                               ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:68:28 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-  ● BasicADLAgent › formats output at different detail levels
+    68     const standard = agent.getFormattedContent(processed, 'standard');
+                                  ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:73:28 - error TS2445: Property 'getFormattedContent' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-    expect(received).toContain(expected) // indexOf
+    73     const detailed = agent.getFormattedContent(processed, 'detailed');
+                                  ~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:80:7 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'AssessmentData'.
 
-    Expected substring: "Modified Independent:"
-    Received string:    "Basic ADL Assessment·
-    Independent:
-    - feeding
-    - dressing"
+    80       id: 'test-123',
+             ~~
 
-      68 |     const standard = agent.getFormattedContent(processed, 'standard');
-      69 |     expect(standard).toContain('Independent:');
-    > 70 |     expect(standard).toContain('Modified Independent:');
-         |                      ^
-      71 |     expect(standard).toContain('bathing (uses Shower chair, Hand-held shower)');
-      72 |
-      73 |     const detailed = agent.getFormattedContent(processed, 'detailed');
+ FAIL  src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts
+  ● Test suite failed to run
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:70:22)
+    src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts:2:57 - error TS2307: Cannot find module '../../../types/report' or its corresponding type declarations.
 
-  ● BasicADLAgent › handles empty data gracefully
+    2 import { AgentContext, Assessment, ProcessedData } from '../../../types/report';
+                                                              ~~~~~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts:50:18 - error TS2445: Property 'name' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-    expect(received).toBe(expected) // Object.is equality
+    50     expect(agent.name).toBe('Test Section');
+                        ~~~~
+    src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts:51:18 - error TS2445: Property 'priority' is protected and only accessible within class 'BaseAgent' and its subclasses.
 
-    Expected: "total_assistance"
-    Received: "not_applicable"
+    51     expect(agent.priority).toBe(1);
+                        ~~~~~~~~
+    src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts:98:49 - error TS2345: Argument of type '{ demographics: null; id?: string; date?: string; adl: ADLData; symptoms: SymptomsData; environmental: EnvironmentalData; medicalHistory: MedicalHistoryData; functionalAssessment: FunctionalAssessmentData; documentation: DocumentationData; typicalDay: TypicalDayData; amaGuides: AMAGuidesData; }' is not assignable to parameter of type 'Assessment'.
+      Types of property 'demographics' are incompatible.
+        Type 'null' is not assignable to type 'DemographicsData'.
 
-      86 |     const result = await agent.processData(emptyData);
-      87 |     expect(result.valid).toBe(true);
-    > 88 |     expect(result.activities.feeding.assistanceLevel).toBe(INDEPENDENCE_LEVELS.TOTAL_ASSISTANCE);
-         |                                                       ^
-      89 |   });
-      90 | });
+    98     const section = await agent.generateSection(invalidData);
+                                                       ~~~~~~~~~~~
 
-      at Object.<anonymous> (src/components/ReportGeneration/agents/adl/__tests__/BasicADLAgent.test.ts:88:55)
+ FAIL  src/components/ReportGeneration/__tests__/anderson.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/__tests__/anderson.test.ts:11:33 - error TS2345: Argument of type 'string | Buffer<ArrayBufferLike>' is not assignable to parameter of type 'string'.
+      Type 'Buffer<ArrayBufferLike>' is not assignable to type 'string'.
+
+    11     assessmentData = JSON.parse(response);
+                                       ~~~~~~~~
+    src/components/ReportGeneration/__tests__/anderson.test.ts:37:41 - error TS2345: Argument of type '{ medicalHistory: undefined; id?: string; date?: string; demographics: DemographicsData; adl: ADLData; symptoms: SymptomsData; environmental: EnvironmentalData; functionalAssessment: FunctionalAssessmentData; documentation: DocumentationData; typicalDay: TypicalDayData; amaGuides: AMAGuidesData; }' is not assignable to parameter of type 'Assessment'.
+      Types of property 'medicalHistory' are incompatible.
+        Type 'undefined' is not assignable to type 'MedicalHistoryData'.
+
+    37     const report = await generateReport(partialData, context);
+                                               ~~~~~~~~~~~
+
+ FAIL  src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:9:46 - error TS2345: Argument of type 'import("D:/delilah/src/types/report").AgentContext' is not assignable to parameter of type 'import("D:/delilah/src/components/ReportGeneration/types").AgentContext'.
+      The types of 'config.includeMetrics' are incompatible between these types.
+        Type 'boolean | undefined' is not assignable to type 'boolean'.
+          Type 'undefined' is not assignable to type 'boolean'.
+
+    9   const orchestrator = new AgentOrchestrator(context);
+                                                   ~~~~~~~
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:12:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    12     const sections = await orchestrator.generateReport(mockAssessmentData);
+                                                              ~~~~~~~~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:17:22 - error TS2339: Property 'valid' does not exist on type 'ReportSection'.
+
+    17       expect(section.valid).toBe(true);
+                            ~~~~~
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:31:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    31     const sections = await orchestrator.generateReport(emptyData);
+                                                              ~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:33:22 - error TS2339: Property 'valid' does not exist on type 'ReportSection'.
+
+    33       expect(section.valid).toBe(true);
+                            ~~~~~
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:39:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    39     const sections = await orchestrator.generateReport(mockAssessmentData);
+                                                              ~~~~~~~~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:51:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    51     const sections = await orchestrator.generateReport(partialData);
+                                                              ~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:54:22 - error TS2339: Property 'valid' does not exist on type 'ReportSection'.
+
+    54       expect(section.valid).toBe(true);
+                            ~~~~~
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:61:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    61     const sections = await orchestrator.generateReport(invalidData);
+                                                              ~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:68:56 - error TS2345: Argument of type 'Assessment' is not assignable to parameter of type 'AssessmentData'.
+      Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    68     const sections = await orchestrator.generateReport(mockAssessmentData);
+                                                              ~~~~~~~~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
+    src/components/ReportGeneration/__tests__/AgentOrchestrator.test.ts:72:31 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'ReportSectionType'.
+
+    72       expect(sectionTypes.has(type)).toBe(true);
+                                     ~~~~
+
+ FAIL  src/components/ReportGeneration/agents/__tests__/DemographicsAgent.test.ts
+  ● Test suite failed to run
+
+    src/components/ReportGeneration/agents/DemographicsAgent.ts:54:20 - error TS2554: Expected 1 arguments, but got 4.
+
+    54     super(context, 1.0, 'Demographics', ['demographics']);
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    src/components/ReportGeneration/agents/DemographicsAgent.ts:57:9 - error TS2416: Property 'processData' in type 'DemographicsAgent' is not assignable to the same property in base type 'BaseAgent'.
+      Type '(data: AssessmentData) => Promise<DemographicsData>' is not assignable to type '(data: Assessment) => Promise<any>'.
+        Types of parameters 'data' and 'data' are incompatible.
+          Property 'assessment' is missing in type 'Assessment' but required in type 'AssessmentData'.
+
+    57   async processData(data: AssessmentData): Promise<DemographicsData> {
+               ~~~~~~~~~~~
+
+      src/components/ReportGeneration/types.ts:2:3
+        2   assessment: {
+            ~~~~~~~~~~
+        'assessment' is declared here.
 
 
-Test Suites: 4 failed, 17 passed, 21 total
-Tests:       5 failed, 64 passed, 69 total
+Test Suites: 19 failed, 5 passed, 24 total
+Tests:       16 passed, 16 total
 Snapshots:   0 total
-Time:        20.084 s
+Time:        14.337 s
 Ran all test suites.
 
-D:\delilah>
+D:\delilah>d:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

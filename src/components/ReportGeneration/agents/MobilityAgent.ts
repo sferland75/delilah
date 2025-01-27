@@ -1,171 +1,117 @@
+import { Assessment } from '../../../types';
+import { AgentContext, ReportSection, ReportSectionType } from '../../../types/report';
 import { BaseAgent } from './BaseAgent';
-import { AgentContext, AssessmentData } from '../types';
-import { MobilityInput, MobilityOutput, EquipmentData } from './types/mobility';
-import _ from 'lodash';
 
 export class MobilityAgent extends BaseAgent {
-  constructor(context: AgentContext) {
-    super(context, 2.2, 'Mobility Assessment', ['functionalAssessment.mobility']);
-  }
-
-  async processData(data: AssessmentData): Promise<MobilityOutput> {
-    const mobility = _.get(data, 'functionalAssessment.mobility', {}) as MobilityInput;
-    const bergBalance = _.get(data, 'functionalAssessment.bergBalance.totalScore');
-    const equipment = _.get(data, 'equipment', { current: [] }) as EquipmentData;
-
-    const safety: string[] = [];
-    const recommendations: string[] = [];
-
-    // Process mobility data
-    const processedMobility = {
-      walkingDistance: mobility.walkingDistance || 0,
-      assistiveDevices: mobility.assistiveDevices || [],
-      restrictions: mobility.restrictions || [],
-      terrain: mobility.terrain || [],
-      notes: mobility.notes
-    };
-
-    // Process balance data
-    const balanceScore = bergBalance;
-    const balanceRiskLevel = this.determineBalanceRisk(balanceScore);
-
-    const balanceConcerns = [];
-    if (balanceScore && balanceScore < 45) {
-      balanceConcerns.push('Decreased balance per Berg Balance Score');
-      recommendations.push('Physical therapy evaluation for balance training');
+    constructor(context: AgentContext) {
+        super(context);
+        this.priority = 4;
+        this.name = 'MobilityAgent';
+        this.dataKeys = ['functionalAssessment'];
     }
 
-    // Analyze safety concerns
-    if (processedMobility.walkingDistance < 150) {
-      safety.push('Limited community ambulation distance');
-      recommendations.push('Gait training to improve walking distance');
+    async processData(data: Assessment): Promise<any> {
+        return data.assessment.functionalAssessment;
     }
 
-    // Check needed devices
-    if (processedMobility.assistiveDevices && equipment.current) {
-      const neededDevices = processedMobility.assistiveDevices.filter(
-        device => !equipment.current.includes(device)
-      );
+    protected formatBrief(assessment: any): string {
+        const sections = ['Mobility Assessment Summary:'];
 
-      if (neededDevices.length > 0) {
-        recommendations.push(`Obtain needed mobility devices: ${neededDevices.join(', ')}`);
-      }
+        if (assessment.rangeOfMotion?.measurements?.length) {
+            const limitedROM = assessment.rangeOfMotion.measurements
+                .filter((m: any) => 
+                    this.isLimitedROM(m.left?.active, m.normalROM) || 
+                    this.isLimitedROM(m.right?.active, m.normalROM))
+                .map((m: any) => m.joint)
+                .join(', ');
+            
+            if (limitedROM) {
+                sections.push(`\nLimited range of motion: ${limitedROM}`);
+            }
+        }
+
+        return sections.join('\n');
     }
 
-    if (processedMobility.restrictions.length > 0) {
-      safety.push(...processedMobility.restrictions);
+    protected formatStandard(assessment: any): string {
+        const sections = ['Mobility Assessment:'];
+
+        if (assessment.rangeOfMotion?.measurements?.length) {
+            sections.push('\nRange of Motion Assessment:');
+            assessment.rangeOfMotion.measurements.forEach((measurement: any) => {
+                sections.push(`\n${measurement.joint} - ${measurement.movement}:`);
+                sections.push(`  Left: ${measurement.left?.active || 'Not tested'} (Active)`);
+                sections.push(`  Right: ${measurement.right?.active || 'Not tested'} (Active)`);
+                if (measurement.painLeft || measurement.painRight) {
+                    sections.push('  Pain noted during testing');
+                }
+            });
+        }
+
+        return sections.join('\n');
     }
 
-    return {
-      valid: true,
-      mobility: processedMobility,
-      balance: {
-        score: balanceScore,
-        riskLevel: balanceRiskLevel,
-        concerns: balanceConcerns
-      },
-      safety,
-      recommendations
-    };
-  }
+    protected formatDetailed(assessment: any): string {
+        const sections = ['Detailed Mobility Assessment:'];
 
-  private determineBalanceRisk(score?: number): 'low' | 'moderate' | 'high' {
-    if (!score) return 'high';
-    if (score >= 45) return 'low';
-    if (score >= 35) return 'moderate';
-    return 'high';
-  }
+        if (assessment.rangeOfMotion?.measurements?.length) {
+            sections.push('\nRange of Motion Assessment:');
+            assessment.rangeOfMotion.measurements.forEach((measurement: any) => {
+                sections.push(`\n${measurement.joint} - ${measurement.movement}:`);
+                sections.push(`  Normal ROM: ${measurement.normalROM}`);
+                sections.push(`  Left:`);
+                sections.push(`    Active: ${measurement.left?.active || 'Not tested'}`);
+                sections.push(`    Passive: ${measurement.left?.passive || 'Not tested'}`);
+                sections.push(`    Pain: ${measurement.painLeft ? 'Yes' : 'No'}`);
+                sections.push(`  Right:`);
+                sections.push(`    Active: ${measurement.right?.active || 'Not tested'}`);
+                sections.push(`    Passive: ${measurement.right?.passive || 'Not tested'}`);
+                sections.push(`    Pain: ${measurement.painRight ? 'Yes' : 'No'}`);
+                if (measurement.notes) {
+                    sections.push(`  Notes: ${measurement.notes}`);
+                }
+            });
+        }
 
-  protected formatBrief(data: MobilityOutput): string {
-    const sections = ['Mobility Status'];
+        if (assessment.rangeOfMotion?.generalNotes) {
+            sections.push('\nGeneral ROM Notes:');
+            sections.push(assessment.rangeOfMotion.generalNotes);
+        }
 
-    sections.push(`\nWalking Distance: ${data.mobility.walkingDistance} feet`);
+        if (assessment.manualMuscleTesting?.grades) {
+            sections.push('\nManual Muscle Testing:');
+            Object.entries(assessment.manualMuscleTesting.grades).forEach(([region, movements]: [string, any]) => {
+                sections.push(`\n${region}:`);
+                Object.entries(movements).forEach(([movement, grades]: [string, any]) => {
+                    sections.push(`  ${movement}:`);
+                    if (grades.left) sections.push(`    Left: ${grades.left}`);
+                    if (grades.right) sections.push(`    Right: ${grades.right}`);
+                });
+            });
+        }
 
-    if (data.mobility.assistiveDevices.length > 0) {
-      sections.push(`Uses: ${data.mobility.assistiveDevices.join(', ')}`);
+        return sections.join('\n');
     }
 
-    if (data.balance.riskLevel !== 'low') {
-      sections.push(`Fall Risk Level: ${data.balance.riskLevel}`);
+    async generateSection(data: Assessment): Promise<ReportSection> {
+        const processedData = await this.processData(data);
+        const content = await this.getFormattedContent(
+            processedData,
+            this.context.config.detailLevel
+        );
+
+        return {
+            title: 'Mobility Assessment',
+            type: ReportSectionType.PHYSICAL_ASSESSMENT,
+            orderNumber: this.priority,
+            content
+        };
     }
 
-    return sections.join('\n');
-  }
-
-  protected formatStandard(data: MobilityOutput): string {
-    const sections = ['Mobility Assessment'];
-
-    // Core mobility info
-    sections.push(`\nWalking Distance: ${data.mobility.walkingDistance} feet`);
-    
-    if (data.mobility.assistiveDevices.length > 0) {
-      sections.push(`Assistive Devices: ${data.mobility.assistiveDevices.join(', ')}`);
+    private isLimitedROM(measured: string, normal: string): boolean {
+        if (!measured || !normal) return false;
+        const measuredNum = parseInt(measured);
+        const normalNum = parseInt(normal);
+        return !isNaN(measuredNum) && !isNaN(normalNum) && measuredNum < normalNum * 0.9;
     }
-
-    // Balance info
-    if (data.balance.score !== undefined) {
-      sections.push(`\nBerg Balance Score: ${data.balance.score}`);
-      sections.push(`Fall Risk Level: ${data.balance.riskLevel}`);
-    }
-
-    // Key safety concerns
-    if (data.safety.length > 0) {
-      sections.push(`\nSafety Concerns: ${data.safety.join(', ')}`);
-    }
-
-    return sections.join('\n');
-  }
-
-  protected formatDetailed(data: MobilityOutput): string {
-    const sections = ['Mobility Assessment'];
-
-    // Mobility details
-    sections.push('\nAmbulation:');
-    sections.push(`- Distance: ${data.mobility.walkingDistance} feet`);
-    
-    if (data.mobility.assistiveDevices.length > 0) {
-      sections.push(`- Assistive Devices: ${data.mobility.assistiveDevices.join(', ')}`);
-    }
-    
-    if (data.mobility.terrain.length > 0) {
-      sections.push(`- Terrain: ${data.mobility.terrain.join(', ')}`);
-    }
-    
-    if (data.mobility.restrictions.length > 0) {
-      sections.push(`- Restrictions: ${data.mobility.restrictions.join(', ')}`);
-    }
-
-    // Balance assessment
-    sections.push('\nBalance Assessment:');
-    if (data.balance.score !== undefined) {
-      sections.push(`- Berg Balance Score: ${data.balance.score}`);
-    }
-    sections.push(`- Risk Level: ${data.balance.riskLevel}`);
-    
-    if (data.balance.concerns.length > 0) {
-      sections.push(`- Concerns: ${data.balance.concerns.join(', ')}`);
-    }
-
-    // Safety
-    if (data.safety.length > 0) {
-      sections.push('\nSafety Concerns:');
-      data.safety.forEach(concern => {
-        sections.push(`- ${concern}`);
-      });
-    }
-
-    // Recommendations
-    if (data.recommendations.length > 0) {
-      sections.push('\nRecommendations:');
-      data.recommendations.forEach(rec => {
-        sections.push(`- ${rec}`);
-      });
-    }
-
-    if (data.mobility.notes) {
-      sections.push(`\nAdditional Notes: ${data.mobility.notes}`);
-    }
-
-    return sections.join('\n');
-  }
 }

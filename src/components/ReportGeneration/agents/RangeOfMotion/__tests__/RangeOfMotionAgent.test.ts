@@ -1,6 +1,7 @@
 import { RangeOfMotionAgent } from '../RangeOfMotionAgent';
 import { createMockContext } from '../../../testing/mockContext';
-import { AssessmentData } from '../../../types';
+import { Assessment } from '../../../../../types/report';
+import { mockAssessmentData } from '../../../testing/mockData';
 
 describe('RangeOfMotionAgent', () => {
   let agent: RangeOfMotionAgent;
@@ -9,87 +10,70 @@ describe('RangeOfMotionAgent', () => {
     agent = new RangeOfMotionAgent(createMockContext());
   });
 
-  const sampleData: AssessmentData = {
-    id: 'test',
-    date: '2025-01-26',
+  const testData: Assessment = {
+    ...mockAssessmentData,
     functionalAssessment: {
+      ...mockAssessmentData.functionalAssessment,
       rangeOfMotion: {
         shoulder: [
           {
+            joint: 'shoulder',
+            side: 'right',
             movement: 'flexion',
-            active: {
-              right: 160,
-              left: 120,
-              normal: 180
-            },
-            painScale: {
-              right: 2,
-              left: 6
-            }
+            active: 150,
+            passive: 160,
+            pain: true,
+            notes: 'Pain at end range'
           }
         ],
-        knee: [
-          {
-            movement: 'flexion',
-            active: {
-              right: 130,
-              left: 130,
-              normal: 140
-            }
-          }
-        ]
+        cervical: []
       }
     }
   };
 
-  describe('processData', () => {
-    it('identifies asymmetrical movements', async () => {
-      const result = await agent.processData(sampleData);
-      expect(result.valid).toBe(true);
-      expect(result.patterns?.unilateral).toBeDefined();
-      expect(result.patterns?.unilateral).toContainEqual(
-        expect.objectContaining({
-          joint: 'shoulder',
-          movement: 'flexion',
-          difference: 40
-        })
-      );
-    });
+  it('processes data correctly', async () => {
+    const result = await agent.processData(testData);
+    expect(result.valid).toBe(true);
+    expect(result.data.patterns).toBeDefined();
+  });
 
-    it('identifies painful movements', async () => {
-      const result = await agent.processData(sampleData);
-      expect(result.valid).toBe(true);
-      expect(result.patterns?.painful).toBeDefined();
-      expect(result.patterns?.painful).toContainEqual(
-        expect.objectContaining({
-          joint: 'shoulder',
-          movement: 'flexion',
-          intensity: 6
-        })
-      );
+  it('identifies unilateral patterns', async () => {
+    const result = await agent.processData(testData);
+    expect(result.data.patterns.unilateral).toBeDefined();
+    expect(result.data.patterns.unilateral).toContainEqual({
+      joint: 'shoulder',
+      side: 'right'
     });
   });
 
-  describe('formatting', () => {
-    it('formats output at different detail levels', async () => {
-      const result = await agent.processData(sampleData);
-      expect(result.valid).toBe(true);
-
-      const briefFormat = agent.getFormattedContent(result, 'brief');
-      expect(briefFormat).toContain('Range of Motion Summary');
-      expect(briefFormat).toContain('shoulder');
-      expect(briefFormat).toContain('40');
-
-      const standardFormat = agent.getFormattedContent(result, 'standard');
-      expect(standardFormat).toContain('Range of Motion Assessment');
-      expect(standardFormat).toContain('Movement Patterns');
-      expect(standardFormat).toContain('shoulder');
-      expect(standardFormat).toContain('flexion');
-
-      const detailedFormat = agent.getFormattedContent(result, 'detailed');
-      expect(detailedFormat).toContain('Joint Measurements');
-      expect(detailedFormat).toContain('Movement Patterns');
-      expect(detailedFormat).toContain('Functional Analysis');
+  it('identifies painful movements', async () => {
+    const result = await agent.processData(testData);
+    expect(result.data.patterns.painful).toBeDefined();
+    expect(result.data.patterns.painful).toContainEqual({
+      joint: 'shoulder',
+      movement: 'flexion',
+      side: 'right'
     });
+  });
+
+  it('formats brief content correctly', async () => {
+    const result = await agent.processData(testData);
+    const briefFormat = await (agent as any).getFormattedContent(result, 'brief');
+    expect(briefFormat).toContain('Range of Motion Summary');
+    expect(briefFormat).toContain('shoulder');
+  });
+
+  it('formats standard content correctly', async () => {
+    const result = await agent.processData(testData);
+    const standardFormat = await (agent as any).getFormattedContent(result, 'standard');
+    expect(standardFormat).toContain('Range of Motion Assessment');
+    expect(standardFormat).toContain('Shoulder');
+  });
+
+  it('formats detailed content correctly', async () => {
+    const result = await agent.processData(testData);
+    const detailedFormat = await (agent as any).getFormattedContent(result, 'detailed');
+    expect(detailedFormat).toContain('Detailed Range of Motion Assessment');
+    expect(detailedFormat).toContain('Pain Patterns');
   });
 });

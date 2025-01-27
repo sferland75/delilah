@@ -1,105 +1,109 @@
+import { Assessment } from '../../../../types';
+import { AgentContext, ReportSection, ReportSectionType } from '../../../../types/report';
 import { BaseAgent } from '../BaseAgent';
-import { AgentContext, AssessmentData } from '../../types';
-import _ from 'lodash';
-
-interface PhysicalSymptom {
-  symptom: string;
-  severity: string;
-  frequency: string;
-  impact: string;
-  management: string;
-  location?: string;
-  description?: string;
-  triggers?: string[];
-}
-
-interface PhysicalSymptomOutput {
-  valid: boolean;
-  symptoms: PhysicalSymptom[];
-  errors?: string[];
-}
 
 export class PhysicalSymptomsAgent extends BaseAgent {
-  constructor(context: AgentContext) {
-    super(context, 3.1, 'Physical Symptoms', ['symptoms.physical']);
-  }
-
-  async processData(data: AssessmentData): Promise<PhysicalSymptomOutput> {
-    const symptoms = _.get(data, 'symptoms.physical', []);
-    
-    return {
-      valid: true,
-      symptoms: Array.isArray(symptoms) ? symptoms : []
-    };
-  }
-
-  protected formatBrief(data: PhysicalSymptomOutput): string {
-    if (data.symptoms.length === 0) {
-      return 'No physical symptoms reported';
+    constructor(context: AgentContext) {
+        super(context);
+        this.priority = 3;
+        this.name = 'PhysicalSymptomsAgent';
+        this.dataKeys = ['symptoms'];
     }
 
-    const sections = ['Physical Symptom Summary'];
-    data.symptoms.forEach(s => {
-      const parts = [`- ${s.symptom} (${s.severity}, ${s.frequency})`];
-      if (s.location) {
-        parts.push(`  Location: ${s.location}`);
-      }
-      if (s.impact) {
-        parts.push(`  Impact: ${s.impact}`);
-      }
-      sections.push(parts.join('\n'));
-    });
-
-    return sections.join('\n');
-  }
-
-  protected formatStandard(data: PhysicalSymptomOutput): string {
-    if (data.symptoms.length === 0) {
-      return 'No physical symptoms reported';
+    async processData(data: Assessment): Promise<any> {
+        return data.assessment.symptoms;
     }
 
-    const sections = ['Physical Symptoms'];
+    protected formatBrief(symptoms: any): string {
+        const sections = ['Physical Symptoms Summary:'];
 
-    data.symptoms.forEach(s => {
-      sections.push(`\n${s.symptom}:`);
-      if (s.location) sections.push(`  Location: ${s.location}`);
-      sections.push(`  Severity: ${s.severity}`);
-      sections.push(`  Frequency: ${s.frequency}`);
-      sections.push(`  Impact: ${s.impact}`);
-      sections.push(`  Management: ${s.management}`);
-      if (s.description) sections.push(`  Description: ${s.description}`);
-    });
+        if (symptoms.physical?.length) {
+            const mainSymptoms = symptoms.physical.map((s: any) => 
+                `${s.location} (${s.severity})`
+            ).join(', ');
+            sections.push(`Primary symptoms: ${mainSymptoms}`);
+        }
 
-    return sections.join('\n');
-  }
-
-  protected formatDetailed(data: PhysicalSymptomOutput): string {
-    if (data.symptoms.length === 0) {
-      return 'No physical symptoms reported';
+        return sections.join('\n');
     }
 
-    const sections = ['Physical Symptoms Assessment'];
+    protected formatStandard(symptoms: any): string {
+        const sections = ['Physical Symptoms Assessment:'];
 
-    data.symptoms.forEach(s => {
-      sections.push(`\n${s.symptom}:`);
-      if (s.location) sections.push(`  Location: ${s.location}`);
-      if (s.description) sections.push(`  Description: ${s.description}`);
-      sections.push(`  Severity: ${s.severity}`);
-      sections.push(`  Frequency: ${s.frequency}`);
-      sections.push(`  Impact: ${s.impact}`);
-      sections.push(`  Management: ${s.management}`);
-      if (s.triggers?.length) {
-        sections.push(`  Triggers: ${s.triggers.join(', ')}`);
-      }
-    });
+        if (symptoms.physical?.length) {
+            sections.push('\nReported Symptoms:');
+            symptoms.physical.forEach((symptom: any) => {
+                sections.push(`  Location: ${symptom.location}`);
+                sections.push(`  Pain Type: ${symptom.painType}`);
+                sections.push(`  Severity: ${symptom.severity}`);
+                sections.push(`  Frequency: ${symptom.frequency}`);
+                sections.push('');
+            });
+        }
 
-    sections.push('\nAnalysis:');
-    sections.push('Symptom Distribution:');
-    const severityGroups = _.groupBy(data.symptoms, 'severity');
-    Object.entries(severityGroups).forEach(([severity, symptoms]) => {
-      sections.push(`- ${severity}: ${symptoms.length} symptom(s)`);
-    });
+        return sections.join('\n');
+    }
 
-    return sections.join('\n');
-  }
+    protected formatDetailed(symptoms: any): string {
+        const sections = ['Physical Symptoms (Detailed Assessment):'];
+
+        if (symptoms.physical?.length) {
+            sections.push('\nReported Symptoms:');
+            symptoms.physical.forEach((symptom: any) => {
+                sections.push(`  Location: ${symptom.location}`);
+                sections.push(`  Pain Type: ${symptom.painType}`);
+                sections.push(`  Severity: ${symptom.severity}`);
+                sections.push(`  Frequency: ${symptom.frequency}`);
+                sections.push(`  Aggravating Factors: ${symptom.aggravating}`);
+                sections.push(`  Relieving Factors: ${symptom.relieving}`);
+                sections.push('');
+            });
+        }
+
+        if (symptoms.cognitive?.length) {
+            sections.push('\nCognitive Symptoms:');
+            symptoms.cognitive.forEach((symptom: any) => {
+                sections.push(`  Symptom: ${symptom.symptom}`);
+                sections.push(`  Severity: ${symptom.severity}`);
+                sections.push(`  Frequency: ${symptom.frequency}`);
+                sections.push(`  Impact: ${symptom.impact}`);
+                sections.push(`  Management: ${symptom.management}`);
+                sections.push('');
+            });
+        }
+
+        if (symptoms.emotional?.length) {
+            sections.push('\nEmotional/Psychological Symptoms:');
+            symptoms.emotional.forEach((symptom: any) => {
+                sections.push(`  Symptom: ${symptom.symptom}`);
+                sections.push(`  Severity: ${symptom.severity}`);
+                sections.push(`  Frequency: ${symptom.frequency}`);
+                sections.push(`  Impact: ${symptom.impact}`);
+                sections.push(`  Management: ${symptom.management}`);
+                sections.push('');
+            });
+        }
+
+        if (symptoms.generalNotes) {
+            sections.push('\nAdditional Notes:');
+            sections.push(symptoms.generalNotes);
+        }
+
+        return sections.join('\n');
+    }
+
+    async generateSection(data: Assessment): Promise<ReportSection> {
+        const processedData = await this.processData(data);
+        const content = await this.getFormattedContent(
+            processedData,
+            this.context.config.detailLevel
+        );
+
+        return {
+            title: 'Symptoms Assessment',
+            type: ReportSectionType.SYMPTOMS,
+            orderNumber: this.priority,
+            content
+        };
+    }
 }

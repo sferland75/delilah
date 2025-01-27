@@ -1,5 +1,6 @@
 import { AssessmentData, ReportSection, AgentContext } from './types';
 import { BaseAgent } from './agents/BaseAgent';
+import { DemographicsAgent } from './agents/DemographicsAgent';
 import { DocumentationAgent } from './agents/DocumentationAgent';
 import { MobilityAgent } from './agents/MobilityAgent';
 import { RangeOfMotionAgent } from './agents/RangeOfMotion/RangeOfMotionAgent';
@@ -10,6 +11,8 @@ import { PhysicalSymptomsAgent } from './agents/symptoms/PhysicalSymptomsAgent';
 import { CognitiveSymptomAgent } from './agents/symptoms/CognitiveSymptomAgent';
 import { EmotionalSymptomAgent } from './agents/symptoms/EmotionalSymptomAgent';
 import { SymptomIntegrationAgent } from './agents/symptoms/SymptomIntegrationAgent';
+import { TypicalDayAgent } from './agents/TypicalDayAgent';
+import { AttendantCareAgent } from './agents/AttendantCareAgent';
 
 export class AgentOrchestrator {
   private agents: Array<BaseAgent>;
@@ -19,6 +22,7 @@ export class AgentOrchestrator {
     this.context = context;
     // Initialize all agents in order
     this.agents = [
+      new DemographicsAgent(context),
       new DocumentationAgent(context),
       new MobilityAgent(context),
       new RangeOfMotionAgent(context),
@@ -28,7 +32,9 @@ export class AgentOrchestrator {
       new PhysicalSymptomsAgent(context),
       new CognitiveSymptomAgent(context),
       new EmotionalSymptomAgent(context),
-      new SymptomIntegrationAgent(context)
+      new SymptomIntegrationAgent(context),
+      new TypicalDayAgent(context),
+      new AttendantCareAgent(context)
     ];
     
     // Sort by order number
@@ -61,11 +67,17 @@ export class AgentOrchestrator {
     }
 
     try {
+      // Log start of processing
+      this.context.logger.log('Starting report generation...');
+      
       // Generate sections in parallel with error handling for each agent
       const sections = await Promise.all(
         this.agents.map(async agent => {
           try {
             const section = await agent.generateSection(data);
+            
+            // Log successful section generation
+            this.context.logger.log(`Generated section: ${agent.getSectionName()}`);
             
             // Ensure valid sections for empty data
             if (!section.content || section.content.trim() === '') {
@@ -98,9 +110,14 @@ export class AgentOrchestrator {
       );
 
       // Filter out any null/undefined sections and sort by order number
-      return sections
+      const processedSections = sections
         .filter((section): section is ReportSection => section !== null && section !== undefined)
         .sort((a, b) => a.orderNumber - b.orderNumber);
+
+      // Log completion
+      this.context.logger.log(`Generated ${processedSections.length} sections`);
+      
+      return processedSections;
         
     } catch (error) {
       this.context.logger.error(`Error generating report: ${(error as Error).message}`);

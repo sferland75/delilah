@@ -1,152 +1,196 @@
 import { BaseAgent } from './BaseAgent';
+import { AgentContext, Assessment } from '../../types';
+import _ from 'lodash';
+
+interface AMAOutput {
+  activities: {
+    self: AMAMetric;
+    life: AMAMetric;
+    travel: AMAMetric;
+  };
+  impairments: {
+    physical: AMAImpairment[];
+    mental: AMAImpairment[];
+  };
+  analysis: {
+    totalPhysicalImpairment: number;
+    totalMentalImpairment: number;
+    combinedImpairment: number;
+  };
+}
+
+interface AMAMetric {
+  class: number;
+  description: string;
+  limitations: string[];
+}
+
+interface AMAImpairment {
+  bodyPart: string;
+  percentage: number;
+  rationale: string;
+}
 
 export class AMAGuidesAgent extends BaseAgent {
-  constructor(context: any) {
-    super(
-      context,
-      6,
-      'AMA Guides Assessment',
-      ['amaGuides']
-    );
+  constructor(context: AgentContext) {
+    super(context);
+    this.priority = 6;
+    this.name = 'AMA Guides Assessment';
+    this.dataKeys = ['amaGuides'];
   }
 
-  process(data: any) {
-    const ama = data.amaGuides;
-    if (!ama) return null;
+  async processData(data: Assessment): Promise<AMAOutput> {
+    const amaData = _.get(data, 'amaGuides', {});
+
+    const activities = {
+      self: this.processMetric(_.get(amaData, 'activities.self', {})),
+      life: this.processMetric(_.get(amaData, 'activities.life', {})),
+      travel: this.processMetric(_.get(amaData, 'activities.travel', {}))
+    };
+
+    const impairments = {
+      physical: this.processImpairments(_.get(amaData, 'impairments.physical', [])),
+      mental: this.processImpairments(_.get(amaData, 'impairments.mental', []))
+    };
+
+    const analysis = this.calculateTotalImpairment(impairments);
 
     return {
-      activities: this.processActivities(ama.activities),
-      social: this.processSocial(ama.social),
-      concentration: this.processConcentration(ama.concentration),
-      workAdaptation: this.processWorkAdaptation(ama.workAdaptation),
-      overallRating: ama.overallRating,
-      generalNotes: ama.generalNotes,
-      impairmentClass: this.calculateImpairmentClass(ama)
+      activities,
+      impairments,
+      analysis
     };
   }
 
-  private processActivities(activities: any) {
-    if (!activities) return null;
-
+  private processMetric(data: any): AMAMetric {
     return {
-      self: this.rateImpairment(activities.self),
-      travel: this.rateImpairment(activities.travel),
-      social: this.rateImpairment(activities.social),
-      recreational: this.rateImpairment(activities.recreational)
+      class: data.class || 1,
+      description: data.description || 'No significant limitations',
+      limitations: Array.isArray(data.limitations) ? data.limitations : []
     };
   }
 
-  private processSocial(social: any) {
-    if (!social) return null;
-
-    return {
-      family: this.rateImpairment(social.family),
-      friends: this.rateImpairment(social.friends),
-      community: this.rateImpairment(social.community)
-    };
-  }
-
-  private processConcentration(concentration: any) {
-    if (!concentration) return null;
-
-    return {
-      tasks: this.rateImpairment(concentration.tasks),
-      pace: this.rateImpairment(concentration.pace),
-      adaptability: this.rateImpairment(concentration.adaptability)
-    };
-  }
-
-  private processWorkAdaptation(workAdaptation: any) {
-    if (!workAdaptation) return null;
-
-    return {
-      performance: this.rateImpairment(workAdaptation.performance),
-      flexibility: this.rateImpairment(workAdaptation.flexibility),
-      sustainability: this.rateImpairment(workAdaptation.sustainability)
-    };
-  }
-
-  private rateImpairment(score: number): string {
-    if (score === undefined || score === null) return 'Not Assessed';
+  private processImpairments(impairments: any[]): AMAImpairment[] {
+    if (!Array.isArray(impairments)) return [];
     
-    // Based on AMA Guides 4th Edition
-    if (score <= 1) return 'No Impairment';
-    if (score <= 2) return 'Mild Impairment';
-    if (score <= 3) return 'Moderate Impairment';
-    if (score <= 4) return 'Severe Impairment';
-    return 'Very Severe Impairment';
+    return impairments.map(imp => ({
+      bodyPart: imp.body_part || imp.bodyPart || 'Unspecified',
+      percentage: typeof imp.percentage === 'number' ? imp.percentage : 0,
+      rationale: imp.rationale || 'No rationale provided'
+    }));
   }
 
-  private calculateImpairmentClass(ama: any): string {
-    const scores = [
-      ...Object.values(ama.activities || {}),
-      ...Object.values(ama.social || {}),
-      ...Object.values(ama.concentration || {}),
-      ...Object.values(ama.workAdaptation || {})
-    ].filter(score => typeof score === 'number');
+  private calculateTotalImpairment(impairments: {
+    physical: AMAImpairment[];
+    mental: AMAImpairment[];
+  }): {
+    totalPhysicalImpairment: number;
+    totalMentalImpairment: number;
+    combinedImpairment: number;
+  } {
+    const totalPhysical = impairments.physical.reduce((sum, imp) => sum + imp.percentage, 0);
+    const totalMental = impairments.mental.reduce((sum, imp) => sum + imp.percentage, 0);
+    
+    // Combined impairment using combined values formula
+    const combined = 100 - ((100 - totalPhysical) * (100 - totalMental) / 100);
 
-    if (scores.length === 0) return 'Unable to Determine';
-
-    const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-
-    if (avgScore <= 1) return 'Class 1: No Impairment';
-    if (avgScore <= 2) return 'Class 2: Mild Impairment';
-    if (avgScore <= 3) return 'Class 3: Moderate Impairment';
-    if (avgScore <= 4) return 'Class 4: Marked Impairment';
-    return 'Class 5: Extreme Impairment';
+    return {
+      totalPhysicalImpairment: totalPhysical,
+      totalMentalImpairment: totalMental,
+      combinedImpairment: Number(combined.toFixed(1))
+    };
   }
 
-  format(data: any): string {
-    if (!data) return 'AMA GUIDES ASSESSMENT\n\nInsufficient data for assessment.\n';
+  protected formatBrief(data: AMAOutput): string {
+    const parts = ['AMA Guides Assessment Summary:'];
+    
+    if (data.analysis.combinedImpairment > 0) {
+      parts.push(`Combined Impairment: ${data.analysis.combinedImpairment}%`);
+    } else {
+      parts.push('No significant impairment identified');
+    }
 
-    let report = 'AMA GUIDES ASSESSMENT\n\n';
+    return parts.join('\n');
+  }
 
-    // Overall Classification
-    report += `Impairment Classification: ${data.impairmentClass}\n\n`;
+  protected formatStandard(data: AMAOutput): string {
+    const parts = ['AMA Guides Assessment'];
 
     // Activities
-    if (data.activities) {
-      report += 'Activities of Daily Living:\n';
-      const act = data.activities;
-      report += `• Self Care: ${act.self}\n`;
-      report += `• Travel: ${act.travel}\n`;
-      report += `• Social Activities: ${act.social}\n`;
-      report += `• Recreational Activities: ${act.recreational}\n\n`;
+    parts.push('\nActivity Classifications:');
+    Object.entries(data.activities).forEach(([domain, metric]) => {
+      parts.push(`${domain.charAt(0).toUpperCase() + domain.slice(1)}:`);
+      parts.push(`- Class ${metric.class}`);
+      if (metric.limitations.length > 0) {
+        parts.push(`- Limitations: ${metric.limitations.join(', ')}`);
+      }
+    });
+
+    // Impairments
+    if (data.impairments.physical.length > 0) {
+      parts.push('\nPhysical Impairments:');
+      data.impairments.physical.forEach(imp => {
+        parts.push(`- ${imp.bodyPart}: ${imp.percentage}%`);
+      });
+      parts.push(`Total Physical Impairment: ${data.analysis.totalPhysicalImpairment}%`);
     }
 
-    // Social
-    if (data.social) {
-      report += 'Social Functioning:\n';
-      const soc = data.social;
-      report += `• Family: ${soc.family}\n`;
-      report += `• Friends: ${soc.friends}\n`;
-      report += `• Community: ${soc.community}\n\n`;
+    if (data.impairments.mental.length > 0) {
+      parts.push('\nMental Impairments:');
+      data.impairments.mental.forEach(imp => {
+        parts.push(`- ${imp.bodyPart}: ${imp.percentage}%`);
+      });
+      parts.push(`Total Mental Impairment: ${data.analysis.totalMentalImpairment}%`);
     }
 
-    // Concentration
-    if (data.concentration) {
-      report += 'Concentration, Persistence and Pace:\n';
-      const conc = data.concentration;
-      report += `• Task Completion: ${conc.tasks}\n`;
-      report += `• Work Pace: ${conc.pace}\n`;
-      report += `• Adaptability: ${conc.adaptability}\n\n`;
+    parts.push(`\nCombined Impairment Rating: ${data.analysis.combinedImpairment}%`);
+
+    return parts.join('\n');
+  }
+
+  protected formatDetailed(data: AMAOutput): string {
+    const parts = ['AMA Guides Detailed Assessment'];
+
+    // Activities
+    parts.push('\nActivity Classifications:');
+    Object.entries(data.activities).forEach(([domain, metric]) => {
+      parts.push(`\n${domain.charAt(0).toUpperCase() + domain.slice(1)}:`);
+      parts.push(`Class: ${metric.class}`);
+      parts.push(`Description: ${metric.description}`);
+      if (metric.limitations.length > 0) {
+        parts.push('Limitations:');
+        metric.limitations.forEach(lim => parts.push(`- ${lim}`));
+      }
+    });
+
+    // Physical Impairments
+    if (data.impairments.physical.length > 0) {
+      parts.push('\nPhysical Impairments:');
+      data.impairments.physical.forEach(imp => {
+        parts.push(`\n${imp.bodyPart}:`);
+        parts.push(`Percentage: ${imp.percentage}%`);
+        parts.push(`Rationale: ${imp.rationale}`);
+      });
+      parts.push(`\nTotal Physical Impairment: ${data.analysis.totalPhysicalImpairment}%`);
     }
 
-    // Work Adaptation
-    if (data.workAdaptation) {
-      report += 'Work Adaptation:\n';
-      const work = data.workAdaptation;
-      report += `• Performance: ${work.performance}\n`;
-      report += `• Flexibility: ${work.flexibility}\n`;
-      report += `• Sustainability: ${work.sustainability}\n\n`;
+    // Mental Impairments
+    if (data.impairments.mental.length > 0) {
+      parts.push('\nMental Impairments:');
+      data.impairments.mental.forEach(imp => {
+        parts.push(`\n${imp.bodyPart}:`);
+        parts.push(`Percentage: ${imp.percentage}%`);
+        parts.push(`Rationale: ${imp.rationale}`);
+      });
+      parts.push(`\nTotal Mental Impairment: ${data.analysis.totalMentalImpairment}%`);
     }
 
-    // Notes
-    if (data.generalNotes) {
-      report += 'Additional Observations:\n';
-      report += data.generalNotes + '\n\n';
-    }
+    // Combined Analysis
+    parts.push('\nCombined Impairment Analysis:');
+    parts.push(`Physical Component: ${data.analysis.totalPhysicalImpairment}%`);
+    parts.push(`Mental Component: ${data.analysis.totalMentalImpairment}%`);
+    parts.push(`Combined Rating: ${data.analysis.combinedImpairment}%`);
 
-    return report;
+    return parts.join('\n');
   }
 }

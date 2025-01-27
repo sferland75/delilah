@@ -1,0 +1,3 @@
+@echo off
+echo Running narrative core tests...
+call npm test src/components/ReportGeneration/agents/__tests__/BaseAgent.test.ts src/components/ReportGeneration/testing/TestableAgent.test.ts

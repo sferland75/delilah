@@ -1,106 +1,173 @@
-import { AgentContext, AssessmentData, ValidationResult, ReportSection } from '../types';
-import _ from 'lodash';
+import { AgentContext, AssessmentData, ProcessedData, ReportSection } from '../../../types/report';
+import { NarrativeEngine } from '../narrative/NarrativeEngine';
+
+export interface AgentMetadata {
+    name: string;
+    priority: number;
+    dataKeys: string[];
+}
 
 export abstract class BaseAgent {
-  protected context: AgentContext;
-  protected orderNumber: number;
-  protected sectionName: string;
-  protected requiredFields: string[];
-  protected validationRules: Map<string, (value: any) => boolean>;
+    protected context: AgentContext;
+    protected metadata: AgentMetadata;
+    private narrativeEngine: NarrativeEngine | null = null;
 
-  constructor(context: AgentContext, orderNumber: number, sectionName: string, requiredFields: string[] = []) {
-    this.context = context;
-    this.orderNumber = orderNumber;
-    this.sectionName = sectionName;
-    this.requiredFields = requiredFields;
-    this.validationRules = new Map();
-  }
-
-  protected getField(data: any, path: string, defaultValue: any = undefined): any {
-    return _.get(data, path, defaultValue);
-  }
-
-  async validateData(data: AssessmentData): Promise<ValidationResult> {
-    const errors: string[] = [];
-    const warnings: string[] = [];
-
-    // Check required fields
-    for (const field of this.requiredFields) {
-      const value = this.getField(data, field);
-      if (value === undefined) {
-        errors.push(`Missing required field: ${field}`);
-      }
+    constructor(context: AgentContext, metadata?: Partial<AgentMetadata>) {
+        this.context = context || { 
+            logger: console,
+            config: {
+                detailLevel: 'standard',
+                validateData: true,
+                formatPreference: 'clinical',
+                includeMetrics: false
+            },
+            features: {}
+        };
+        
+        this.metadata = {
+            name: 'BaseAgent',
+            priority: 0,
+            dataKeys: [],
+            ...metadata
+        };
+        
+        if (this.isNarrativeEnabled()) {
+            this.narrativeEngine = new NarrativeEngine(this.context);
+        }
     }
 
-    // Run validation rules
-    for (const [field, rule] of this.validationRules.entries()) {
-      const value = this.getField(data, field);
-      if (value !== undefined && !rule(value)) {
-        errors.push(`Invalid value for field: ${field}`);
-      }
+    abstract processData(data: AssessmentData): Promise<ProcessedData>;
+    
+    protected abstract formatBrief(data: any): string;
+    protected abstract formatStandard(data: any): string;
+    protected abstract formatDetailed(data: any): string;
+    
+    protected isNarrativeEnabled(): boolean {
+        return this.context.features?.enableNarrative ?? false;
     }
 
-    return {
-      valid: errors.length === 0,
-      errors,
-      warnings
-    };
-  }
+    async generateSection(data: AssessmentData): Promise<ReportSection> {
+        try {
+            // Process raw data
+            const processedData = await this.processData(data);
 
-  abstract processData(data: AssessmentData): Promise<any>;
+            // If data processing failed, return error section
+            if (!processedData.valid) {
+                return {
+                    sectionName: this.metadata.name,
+                    title: this.generateTitle(),
+                    type: this.getSectionType(),
+                    orderNumber: this.metadata.priority,
+                    content: `Standard: Error processing ${this.metadata.name.toLowerCase()} data`,
+                    valid: false,
+                    errors: processedData.errors
+                };
+            }
 
-  format(data: any): string {
-    return this.formatByDetailLevel(data, this.context.config?.detailLevel || 'standard');
-  }
+            // Generate content based on whether narrative is enabled
+            const content = this.isNarrativeEnabled() 
+                ? await this.generateNarrativeContent(data, processedData)
+                : await this.generateStandardContent(processedData);
 
-  public getFormattedContent(data: any, level?: "brief" | "standard" | "detailed"): string {
-    return this.formatByDetailLevel(data, level || 'standard');
-  }
-
-  protected formatByDetailLevel(data: any, level: "brief" | "standard" | "detailed"): string {
-    switch (level) {
-      case 'brief':
-        return this.formatBrief(data);
-      case 'detailed':
-        return this.formatDetailed(data);
-      default:
-        return this.formatStandard(data);
-    }
-  }
-
-  protected abstract formatBrief(data: any): string;
-  protected abstract formatDetailed(data: any): string;
-  protected abstract formatStandard(data: any): string;
-
-  public getOrderNumber(): number {
-    return this.orderNumber;
-  }
-
-  public getSectionName(): string {
-    return this.sectionName;
-  }
-
-  async generateSection(data: AssessmentData): Promise<ReportSection> {
-    const validationResult = await this.validateData(data);
-    if (!validationResult.valid) {
-      return {
-        orderNumber: this.orderNumber,
-        sectionName: this.sectionName,
-        content: validationResult.errors.join('\n'),
-        valid: false,
-        title: this.sectionName,
-        errors: validationResult.errors
-      };
+            return {
+                sectionName: this.metadata.name,
+                title: this.generateTitle(),
+                type: this.getSectionType(),
+                orderNumber: this.metadata.priority,
+                content,
+                valid: true
+            };
+        } catch (error) {
+            return {
+                sectionName: this.metadata.name,
+                title: this.generateTitle(),
+                type: this.getSectionType(),
+                orderNumber: this.metadata.priority,
+                content: `Standard: Error in ${this.metadata.name.toLowerCase()} - ${error instanceof Error ? error.message : 'Unknown error'}`,
+                valid: false,
+                errors: [error instanceof Error ? error.message : 'Unknown error']
+            };
+        }
     }
 
-    const processedData = await this.processData(data);
-    return {
-      orderNumber: this.orderNumber,
-      sectionName: this.sectionName,
-      content: this.getFormattedContent(processedData, this.context.config?.detailLevel),
-      valid: processedData.valid,
-      title: this.sectionName,
-      errors: processedData.errors
-    };
-  }
+    protected async generateStandardContent(processedData: ProcessedData): Promise<string> {
+        try {
+            return await this.getFormattedContent(processedData.data, this.context.config.detailLevel);
+        } catch (error) {
+            return `Standard: Error formatting ${this.metadata.name.toLowerCase()} content`;
+        }
+    }
+
+    protected async generateNarrativeContent(data: AssessmentData, processedData: ProcessedData): Promise<string> {
+        if (!this.narrativeEngine) {
+            return this.generateStandardContent(processedData);
+        }
+
+        try {
+            const sectionType = this.getSectionType().toLowerCase();
+            const narrative = await this.narrativeEngine.generateNarrative(data.raw, sectionType);
+            
+            // If narrative generation fails or returns placeholder content, fall back to standard
+            if (!narrative || 
+                narrative === 'No data available for narrative generation' ||
+                narrative.includes('Unable to generate narrative')) {
+                return this.generateStandardContent(processedData);
+            }
+
+            return this.formatWithNarrative(processedData.data, narrative);
+        } catch (error) {
+            return this.generateStandardContent(processedData);
+        }
+    }
+
+    protected async getFormattedContent(data: any, detailLevel: 'brief' | 'standard' | 'detailed'): Promise<string> {
+        try {
+            switch (detailLevel) {
+                case 'brief':
+                    return this.formatBrief(data);
+                case 'standard':
+                    return this.formatStandard(data);
+                case 'detailed':
+                    return this.formatDetailed(data);
+                default:
+                    return this.formatStandard(data);
+            }
+        } catch (error) {
+            return `Standard: Error formatting ${this.metadata.name.toLowerCase()} content`;
+        }
+    }
+
+    protected generateTitle(): string {
+        return this.metadata.name.replace(/Agent$/, '');
+    }
+
+    protected getSectionType(): string {
+        return this.metadata.name.replace(/Agent$/, '').toUpperCase();
+    }
+
+    protected formatWithNarrative(data: any, narrative: string): string {
+        try {
+            const sections: string[] = [];
+
+            if (narrative) {
+                sections.push(narrative);
+            }
+
+            if (this.context.config.detailLevel === 'detailed') {
+                const detailedContent = this.formatDetailed(data);
+                if (detailedContent && !detailedContent.includes('Error')) {
+                    sections.push(detailedContent);
+                }
+            }
+
+            return sections.filter(Boolean).join('\n\n') || 
+                   `Standard: No content available for ${this.metadata.name.toLowerCase()}`;
+        } catch (error) {
+            return this.generateStandardContent({
+                valid: false,
+                data: data,
+                errors: [error instanceof Error ? error.message : 'Error formatting narrative']
+            });
+        }
+    }
 }

@@ -1,25 +1,45 @@
 import { BaseAgent } from '../BaseAgent';
 import { AgentContext, AssessmentData } from '../../types';
 import _ from 'lodash';
-import { ADLActivity, ADLData, IndependenceLevel, INDEPENDENCE_LEVELS } from './ADLTypes';
+import { 
+  BasicADLData,
+  Activity,
+  IndependenceLevel,
+  INDEPENDENCE_LEVELS,
+  ProcessedADLData,
+  ADLSectionConfig
+} from './types';
 
 interface ADLOutput {
   valid: boolean;
-  activities: ADLData;
+  activities: BasicADLData;
   recommendations: string[];
   errors?: string[];
 }
 
 export class BasicADLAgent extends BaseAgent {
+  private config: ADLSectionConfig;
+
   constructor(context: AgentContext) {
-    super(context, 3.1, 'Basic ADL Assessment', ['functionalAssessment.adl']);
+    super(context);
+    this.priority = 3.1;
+    this.name = 'Basic ADL Assessment';
+    this.dataKeys = ['functionalAssessment.adl'];
+
+    // Default configuration
+    this.config = {
+      includeRiskAnalysis: true,
+      includeAdaptations: true,
+      includeProgressionNotes: true,
+      detailLevel: 'standard'
+    };
   }
 
   async processData(data: AssessmentData): Promise<ADLOutput> {
     try {
-      const adlData = _.get(data, 'functionalAssessment.adl', {}) as Partial<ADLData>;
+      const adlData = _.get(data, 'functionalAssessment.adl', {}) as Partial<BasicADLData>;
       
-      const activities: ADLData = {
+      const activities: BasicADLData = {
         feeding: this.processActivity(adlData.feeding),
         bathing: this.processActivity(adlData.bathing),
         dressing: this.processActivity(adlData.dressing),
@@ -38,15 +58,14 @@ export class BasicADLAgent extends BaseAgent {
     } catch (error) {
       return {
         valid: false,
-        activities: {} as ADLData,
+        activities: {} as BasicADLData,
         recommendations: [],
         errors: [(error as Error).message]
       };
     }
   }
 
-  private processActivity(data: any): ADLActivity {
-    // Changed default behavior to return TOTAL_ASSISTANCE for empty/missing data
+  private processActivity(data: any): Activity {
     if (!data) {
       return {
         assistanceLevel: INDEPENDENCE_LEVELS.TOTAL_ASSISTANCE,
@@ -54,7 +73,6 @@ export class BasicADLAgent extends BaseAgent {
       };
     }
 
-    // If we receive the direct assistance level value
     if (typeof data === 'string') {
       return {
         assistanceLevel: data as IndependenceLevel,
@@ -62,12 +80,10 @@ export class BasicADLAgent extends BaseAgent {
       };
     }
 
-    // Process the assistance level
     let assistanceLevel: IndependenceLevel;
     if (typeof data.assistanceLevel === 'string') {
       assistanceLevel = data.assistanceLevel;
     } else {
-      // Changed default to TOTAL_ASSISTANCE
       assistanceLevel = INDEPENDENCE_LEVELS.TOTAL_ASSISTANCE;
     }
 
@@ -78,7 +94,7 @@ export class BasicADLAgent extends BaseAgent {
     };
   }
 
-  private generateRecommendations(activities: ADLData): string[] {
+  private generateRecommendations(activities: BasicADLData): string[] {
     const recommendations: string[] = [];
 
     Object.entries(activities).forEach(([activity, details]) => {
@@ -97,7 +113,7 @@ export class BasicADLAgent extends BaseAgent {
     return recommendations;
   }
 
-  private generateRecommendation(activity: string, details: ADLActivity): string {
+  private generateRecommendation(activity: string, details: Activity): string {
     switch (details.assistanceLevel) {
       case INDEPENDENCE_LEVELS.MODIFIED_INDEPENDENT:
         if (!details.equipment?.length) {
@@ -125,7 +141,7 @@ export class BasicADLAgent extends BaseAgent {
     }
   }
 
-  private formatAssistanceLevel(level: IndependenceLevel): string {
+  protected formatAssistanceLevel(level: IndependenceLevel): string {
     const mapping: Record<IndependenceLevel, string> = {
       [INDEPENDENCE_LEVELS.INDEPENDENT]: 'Independent',
       [INDEPENDENCE_LEVELS.MODIFIED_INDEPENDENT]: 'Modified Independent',

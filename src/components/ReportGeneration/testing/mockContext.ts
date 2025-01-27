@@ -1,29 +1,25 @@
-import { AgentContext } from '../types';
+import { AgentContext } from '../../../types/report';
+import { DEFAULT_FEATURES } from '../../../types/features';
 
-// Mock logger implementation
 const noop = (_: string) => { /* no-op */ };
 
-// Base context for testing
-const mockContext: AgentContext = {
+export const createMockContext = (overrides?: Partial<AgentContext>): AgentContext => ({
   logger: {
     log: noop,
     error: noop,
     warn: noop,
-    info: noop
+    info: noop,
+    ...(overrides?.logger || {})
   },
   config: {
-    detailLevel: 'standard'
+    detailLevel: 'standard',
+    validateData: true,
+    formatPreference: 'text',
+    includeMetrics: true,
+    ...(overrides?.config || {})
+  },
+  features: {
+    ...DEFAULT_FEATURES,
+    ...(overrides?.features || {})
   }
-};
-
-// Helper to create mock context with specific detail level
-export function createMockContext(detailLevel: "brief" | "standard" | "detailed" = "standard"): AgentContext {
-  return {
-    ...mockContext,
-    config: {
-      detailLevel
-    }
-  };
-}
-
-export { mockContext };
+});

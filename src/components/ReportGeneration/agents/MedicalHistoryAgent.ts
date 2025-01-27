@@ -1,132 +1,141 @@
+import { Assessment } from '../../../types';
+import { AgentContext, ReportSection, ReportSectionType } from '../../../types/report';
 import { BaseAgent } from './BaseAgent';
-import { formatDate } from './utils';
+import { MedicationAnalyzer } from '../narrative/MedicationAnalyzer';
 
 export class MedicalHistoryAgent extends BaseAgent {
-  constructor(context: any) {
-    super(
-      context,
-      3,
-      'Medical History',
-      ['medicalHistory.medications', 'medicalHistory.preExisting', 'medicalHistory.injury']
-    );
-  }
-
-  process(data: any) {
-    const history = data.medicalHistory;
-
-    return {
-      currentMedications: this.processMedications(history.medications),
-      preExisting: history.preExisting,
-      injury: this.processInjury(history.injury),
-      treatments: this.processTreatments(history.currentTreatment),
-      surgeries: history.surgeries
-    };
-  }
-
-  private processMedications(medications: any[]) {
-    if (!medications?.length) return [];
-    
-    return medications.map(med => ({
-      name: med.name,
-      dosage: med.dosage,
-      frequency: med.frequency,
-      purpose: med.purpose,
-      isPostAccident: this.determineIfPostAccident(med.purpose)
-    }));
-  }
-
-  private processInjury(injury: any) {
-    if (!injury) return null;
-
-    return {
-      circumstance: injury.circumstance,
-      immediateResponse: injury.immediateResponse,
-      subsequentCare: injury.subsequentCare,
-      position: injury.position
-    };
-  }
-
-  private processTreatments(treatments: any[]) {
-    if (!treatments?.length) return [];
-
-    return treatments
-      .filter(t => t.name || t.focus) // Filter empty entries
-      .map(t => ({
-        provider: t.providerType,
-        name: t.name,
-        focus: t.focus,
-        frequency: t.frequency,
-        startDate: t.startDate ? formatDate(t.startDate) : undefined,
-        progress: t.progress
-      }));
-  }
-
-  private determineIfPostAccident(purpose: string): boolean {
-    const postAccidentIndicators = [
-      'accident',
-      'injury',
-      'pain',
-      'trauma',
-      'post',
-      'since',
-      'after'
-    ];
-    
-    return postAccidentIndicators.some(indicator => 
-      purpose?.toLowerCase().includes(indicator)
-    );
-  }
-
-  format(data: any): string {
-    let report = 'MEDICAL HISTORY\n\n';
-
-    // Pre-existing Conditions
-    if (data.preExisting) {
-      report += 'Pre-existing Conditions:\n';
-      report += `${data.preExisting}\n\n`;
+    constructor(context: AgentContext) {
+        super(context);
+        this.priority = 2;
+        this.name = 'MedicalHistoryAgent';
+        this.dataKeys = ['medicalHistory'];
     }
 
-    // Injury Details
-    if (data.injury) {
-      report += 'Nature of Injury:\n';
-      report += `${data.injury.circumstance}\n\n`;
-      report += 'Initial Response:\n';
-      report += `${data.injury.immediateResponse}\n\n`;
-      report += 'Subsequent Care:\n';
-      report += `${data.injury.subsequentCare}\n\n`;
+    async processData(data: Assessment): Promise<any> {
+        return data.assessment.medicalHistory;
     }
 
-    // Current Medications
-    if (data.currentMedications?.length) {
-      report += 'Current Medications:\n';
-      data.currentMedications.forEach((med: any) => {
-        report += `• ${med.name} ${med.dosage} ${med.frequency}\n`;
-        if (med.purpose) report += `  Purpose: ${med.purpose}\n`;
-      });
-      report += '\n';
-    }
-
-    // Current Treatments
-    if (data.treatments?.length) {
-      report += 'Current Treatment:\n';
-      data.treatments.forEach((treatment: any) => {
-        if (treatment.name) {
-          report += `• ${treatment.name}`;
-          if (treatment.provider) report += ` (${treatment.provider})`;
-          report += '\n';
-          if (treatment.focus) report += `  Focus: ${treatment.focus}\n`;
-          if (treatment.frequency) report += `  Frequency: ${treatment.frequency}\n`;
+    protected formatBrief(data: any): string {
+        const sections = ['Medical History Summary'];
+        
+        // Analyze medication patterns
+        if (data.medications?.length) {
+            const patterns = MedicationAnalyzer.analyzeMedications(data.medications);
+            sections.push('\nMedication Profile:');
+            patterns.forEach(pattern => {
+                if (pattern.clinicalSignificance) {
+                    sections.push(`  ${pattern.clinicalSignificance}`);
+                }
+            });
         }
-      });
-      report += '\n';
+
+        // Injury summary
+        if (data.injury) {
+            sections.push('\nInjury Profile:');
+            sections.push(`  ${this.formatInjuryNarrative(data.injury)}`);
+        }
+
+        return sections.join('\n');
     }
 
-    // Surgeries
-    if (data.surgeries) {
-      report += 'Surgical History:\n';
-      report += `${data.surgeries}\n\n`;
+    protected formatStandard(data: any): string {
+        const sections = ['Medical History Assessment'];
+
+        // Comprehensive medication analysis
+        if (data.medications?.length) {
+            const patterns = MedicationAnalyzer.analyzeMedications(data.medications);
+            sections.push('\nMedication Management:');
+            patterns.forEach(pattern => {
+                if (pattern.medications.length > 0) {
+                    sections.push(`\n${this.capitalizeFirst(pattern.category)} Management:`);
+                    sections.push(`  Clinical Significance: ${pattern.clinicalSignificance}`);
+                    pattern.medications.forEach(med => {
+                        sections.push(`  - ${med.name} (${med.dosage}, ${med.frequency})`);
+                    });
+                    if (pattern.implications.length > 0) {
+                        sections.push('  Functional Implications:');
+                        pattern.implications.forEach(imp => {
+                            sections.push(`    • ${imp}`);
+                        });
+                    }
+                }
+            });
+        }
+
+        // Detailed injury analysis
+        if (data.injury) {
+            sections.push('\nInjury Analysis:');
+            sections.push(this.formatDetailedInjuryNarrative(data.injury));
+            if (data.currentTreatment?.length) {
+                sections.push('\nTreatment Response:');
+                sections.push(this.analyzeTreatmentResponse(data.currentTreatment));
+            }
+        }
+
+        return sections.join('\n');
     }
 
-    return report;
-  }
+    protected formatDetailed(data: any): string {
+        const sections = this.formatStandard(data);
+        const additionalDetails: string[] = [];
+
+        if (data.preExisting) {
+            additionalDetails.push('\nPre-existing Conditions & Impact:');
+            additionalDetails.push(this.analyzePreExistingConditions(data.preExisting));
+        }
+
+        if (data.surgeries) {
+            additionalDetails.push('\nSurgical History & Implications:');
+            additionalDetails.push(this.analyzeSurgicalHistory(data.surgeries));
+        }
+
+        return sections + '\n' + additionalDetails.join('\n');
+    }
+
+    private formatInjuryNarrative(injury: any): string {
+        return `${injury.circumstance} Initial presentation included ${injury.immediateResponse.toLowerCase()}. ` +
+               `Subsequent care involved ${injury.subsequentCare.toLowerCase()}.`;
+    }
+
+    private formatDetailedInjuryNarrative(injury: any): string {
+        const narrativePoints = [
+            `Mechanism of Injury: ${injury.circumstance}`,
+            `Initial Response: ${injury.immediateResponse}`,
+            `Care Progression: ${injury.subsequentCare}`,
+            `Current Status: ${this.analyzeCurrentStatus(injury)}`
+        ];
+
+        return narrativePoints.join('\n  • ');
+    }
+
+    private analyzeCurrentStatus(injury: any): string {
+        // This would be expanded based on comparing initial vs current symptoms
+        // and treatment response patterns
+        return 'Currently undergoing active treatment and monitoring';
+    }
+
+    private analyzeTreatmentResponse(treatments: any[]): string {
+        const responsePatterns = treatments.map(treatment => {
+            return `${treatment.name} (${treatment.providerType}): ` +
+                   `${treatment.frequency} sessions focusing on ${treatment.focus.toLowerCase()}. ` +
+                   `Progress noted as ${treatment.progress.toLowerCase()}.`;
+        });
+
+        return responsePatterns.join('\n  • ');
+    }
+
+    private analyzePreExistingConditions(conditions: string): string {
+        // This would be expanded to identify interaction patterns between
+        // pre-existing conditions and current presentation
+        return `  ${conditions}\n  Clinical Impact: Requires ongoing monitoring and consideration during treatment planning.`;
+    }
+
+    private analyzeSurgicalHistory(surgeries: string): string {
+        // This would be expanded to analyze surgical outcomes and current functional impacts
+        return `  ${surgeries}\n  Functional Considerations: May influence treatment approach and recovery expectations.`;
+    }
+
+    private capitalizeFirst(str: string): string {
+        return str.charAt(0).toUpperCase() + str.slice(1).replace('_', ' ');
+    }
 }

@@ -1,60 +1,77 @@
 import { CognitiveSymptomAgent } from '../CognitiveSymptomAgent';
 import { createMockContext } from '../../../testing/mockContext';
-import { AssessmentData } from '../../../types';
+import { Assessment } from '../../../../../types/report';
+import { mockAssessmentData } from '../../../testing/mockData';
+import { createTestSuite, runStandardTests } from '../../../testing/setup';
 
 describe('CognitiveSymptomAgent', () => {
-  let agent: CognitiveSymptomAgent;
-
-  const mockSymptomData: AssessmentData = {
-    id: 'test-123',
-    date: '2025-01-26',
+  const testData: Assessment = {
+    ...mockAssessmentData,
     symptoms: {
-      cognitive: [{
-        symptom: 'Memory loss',
-        severity: 'Mild',
-        frequency: 'Daily',
-        impact: 'Forgets appointments',
-        management: 'Calendar reminders'
-      }]
+      physical: [],
+      cognitive: [
+        {
+          symptom: 'Memory issues',
+          severity: 'Mild',
+          frequency: 'Intermittent',
+          impact: 'Forgets appointments',
+          management: 'Calendar reminders',
+          description: 'Short-term memory difficulties',
+          triggers: ['Stress', 'Fatigue']
+        }
+      ],
+      emotional: []
     }
   };
 
-  beforeEach(() => {
-    agent = new CognitiveSymptomAgent(createMockContext());
-  });
+  const { agent, context } = createTestSuite(CognitiveSymptomAgent);
 
   it('processes symptom data correctly', async () => {
-    const result = await agent.processData(mockSymptomData);
+    const result = await agent.processData(testData);
     expect(result.valid).toBe(true);
-    expect(result.symptoms[0].symptom).toBe('Memory loss');
-    expect(result.symptoms[0].severity).toBe('Mild');
+    expect(result.data.symptoms).toBeDefined();
+    expect(result.data.symptoms.length).toBe(1);
+    expect(result.data.symptoms[0].symptom).toBe('Memory issues');
   });
 
-  it('formats output at different detail levels', async () => {
-    const processed = await agent.processData(mockSymptomData);
+  it('formats content at different detail levels', async () => {
+    const processed = await agent.processData(testData);
 
-    const brief = agent.getFormattedContent(processed, 'brief');
-    expect(brief).toContain('Memory loss');
-    expect(brief).toContain('Mild');
-
-    const standard = agent.getFormattedContent(processed, 'standard');
-    expect(standard).toContain('Management: Calendar reminders');
-    expect(standard).toContain('Impact: Forgets appointments');
-
-    const detailed = agent.getFormattedContent(processed, 'detailed');
-    expect(detailed).toContain('Frequency: Daily');
-    expect(detailed).toContain('Severity: Mild');
-  });
-
-  it('handles empty data gracefully', async () => {
-    const processed = await agent.processData({
-      id: 'test-123',
-      date: '2025-01-26',
-      symptoms: { cognitive: [] }
-    });
+    const formats = await runStandardTests({ agent, context, testData });
     
-    const formatted = agent.getFormattedContent(processed, 'standard');
+    // Brief format checks
+    expect(formats.brief).toContain('Memory issues');
+    expect(formats.brief).toContain('Mild');
+
+    // Standard format checks
+    expect(formats.standard).toContain('Intermittent');
+    expect(formats.standard).toContain('Calendar reminders');
+
+    // Detailed format checks
+    expect(formats.detailed).toContain('Short-term memory difficulties');
+    expect(formats.detailed).toContain('Stress');
+    expect(formats.detailed).toContain('Fatigue');
+  });
+
+  it('handles empty symptoms gracefully', async () => {
+    const emptyData = {
+      ...testData,
+      symptoms: {
+        physical: [],
+        cognitive: [],
+        emotional: []
+      }
+    };
+
+    const processed = await agent.processData(emptyData);
+    const formatted = await (agent as any).getFormattedContent(processed, 'standard');
     expect(formatted).toContain('No cognitive symptoms reported');
-    expect(formatted).not.toContain('undefined');
+  });
+
+  it('correctly identifies patterns in symptoms', async () => {
+    const result = await agent.processData(testData);
+    expect(result.data.patterns).toBeDefined();
+    expect(result.data.patterns.triggers).toContain('Stress');
+    expect(result.data.patterns.triggers).toContain('Fatigue');
   });
 });
